@@ -108,20 +108,23 @@ public class RoomDataLoader {
             return 0;
         }
 
-        String text = formatter.formatCellValue(cell).trim();
-        if (text.isEmpty()) {
-            
-            return 0;
-        }
-
         try {
             
-            return Integer.parseInt(text);
+            return (int) cell.getNumericCellValue();
+
         
         } catch (NumberFormatException e) {
             
-            return 0;
+            String text = formatter.formatCellValue(cell).trim();
+            text = text.replaceAll("[^0-9]", "");
+
+            if (!text.isEmpty()) {
+                
+                return Integer.parseInt(text);
+           }
         }
+
+        return 0;
     }
 
     /**
@@ -167,9 +170,21 @@ public class RoomDataLoader {
         try {
             Rooms rooms = load("CS62 Final Project Data.xlsx");
             System.out.println("Loaded " + rooms.size() + " rooms.");
+            
 
             if (rooms.size() > 0) {
                 System.out.println("First room loaded!");
+            }
+
+            int count = 0;
+
+            for (Room r : rooms.getAllRooms()) {
+
+                System.out.println("Room: " + r.getRoomName() + " | Occupancy: " + r.getOccupancy());
+
+                count++;
+
+                if (count == 10) break;
             }
 
         } catch (IOException e) {

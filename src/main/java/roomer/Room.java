@@ -11,14 +11,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-
 
 public class Room {
 
     final String rawName;
-    final int size;
+    final int sqft; //Renamed to sqft from size
     final LocalDateTime time2023;
     final LocalDateTime time2024;
     final LocalDateTime time2025;
@@ -31,10 +28,10 @@ public class Room {
     // such as average time, latest time, etc. Also need 2 account for different
     // dates year-to-year for estimating valuation
 
-    public Room(String rawName, int size, LocalDateTime time2023, LocalDateTime time2024, LocalDateTime time2025,
+    public Room(String rawName, int sqft, LocalDateTime time2023, LocalDateTime time2024, LocalDateTime time2025,
             int occupancy, boolean ac) {
         this.rawName = rawName;
-        this.size = size;
+        this.sqft = sqft;
         this.time2023 = time2023;
         this.time2024 = time2024;
         this.time2025 = time2025;
@@ -45,7 +42,7 @@ public class Room {
 
     public void processRawName() {
         String[] splitName = this.rawName.split(" - ");
-        String building = splitName[0];
+        String building = splitName[0].trim();
         setBuilding(building);
 
 
@@ -145,6 +142,92 @@ public class Room {
         return building;
     }
 
+    public int getSquareFeet() {
+        
+        return sqft;
+    }
+
+    public boolean hasAC() {
+        
+        return building.hasAC();
+    }
+
+    public LocalDateTime getTime2023() {
+       
+        return time2023;
+    }
+
+    public LocalDateTime getTime2024() {
+        
+        return time2024;
+    }
+
+    public LocalDateTime getTime2025() {
+       
+        return time2025;
+    }
+
+    public String completeDrawHistory() {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Historical draw times for ").append(roomName).append(" include:\n");
+
+        sb.append("2023: ");
+
+        if (time2023 != null) {
+            
+            sb.append(time2023);
+        } else {
+
+            sb.append("No data available for 2023.");
+        }
+        sb.append("\n");
+
+        sb.append("2024: ");
+
+        if (time2024 != null) {
+
+            sb.append(time2024);
+        } else {
+
+            sb.append("No data available for 2024.");
+        }
+        sb.append("\n");
+
+        sb.append("2025: ");
+
+        if (time2025 != null) {
+
+            sb.append(time2025);
+        } else {
+
+            sb.append("No data available for 2025.");
+        }
+        sb.append("\n");
+
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+
+        String acStatus;
+
+        if(hasAC()) {
+            
+            acStatus = "AC is available.";
+        } else {
+
+            acStatus = "No AC available.";
+        }
+
+        return roomName + " | " +
+            building + " | " +
+            occupancy + " ppl | " +
+            sqft + " sqft | " +
+            acStatus;
+    }
     public static void main(String args[]) {
 
     DateTimeFormatter formatter =
@@ -161,7 +244,7 @@ public class Room {
     );
 
     System.out.println(test.rawName);
-    System.out.println(test.size);
+    System.out.println(test.sqft);
     System.out.println(test.time2023);
     System.out.println(test.time2024);
     System.out.println(test.time2025);

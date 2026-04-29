@@ -169,6 +169,14 @@ public class Rooms {
         return result;
     }
 
+    public void printRooms(List<Room> list) {
+
+        for (Room room : list) {
+
+            System.out.println(room);
+        }
+    }
+
     public static void main(String[] args) {
 
         try {

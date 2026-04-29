@@ -1,6 +1,9 @@
 /**
  * Documentation of methods explored from https://poi.apache.org/apidocs/dev/org/apache/poi/ss/usermodel/DataFormatter.html,
  * and use in several methods!
+ *
+ * @author Evan Tran, Phu Vo, Ronnie Ho
+ *
  */
 package roomer;
 

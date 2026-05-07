@@ -26,4 +26,11 @@ public class User {
         this.drawTime = newTime;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public LocalDateTime getDrawTime() {
+        return drawTime;
+    }
 }

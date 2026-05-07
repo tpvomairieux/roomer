@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import roomer.interfaces.User;
+import roomer.interfaces.Users;
+
 public class DrawExchange {
 
     /** Maps a unique slot ID to its DrawSlot. */
@@ -32,7 +35,8 @@ public class DrawExchange {
      * A user may only have one active posting at a time.
      *
      * @param user the user posting their draw time
-     * @return the created DrawSlot, or null if user has no draw time or already posted
+     * @return the created DrawSlot, or null if user has no draw time or already
+     *         posted
      */
     public DrawSlot postSlot(User user) {
         if (user.getDrawTime() == null || userToSlotId.containsKey(user.getEmail())) {

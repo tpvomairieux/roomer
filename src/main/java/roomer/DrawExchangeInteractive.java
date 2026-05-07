@@ -11,10 +11,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
+import roomer.interfaces.User;
+import roomer.interfaces.Users;
+
 public class DrawExchangeInteractive {
 
-    private static final DateTimeFormatter FORMATTER =
-        DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a", Locale.ENGLISH);
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a",
+            Locale.ENGLISH);
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -38,12 +41,23 @@ public class DrawExchangeInteractive {
             String choice = scanner.nextLine();
 
             switch (choice) {
-                case "1": postSlot(scanner, users, exchange); break;
-                case "2": viewSlots(exchange); break;
-                case "3": checkTrade(scanner, exchange); break;
-                case "4": executeTrade(scanner, users, exchange); break;
-                case "5": active = false; break;
-                default: System.out.println("Invalid choice. Enter a number 1-5.");
+                case "1":
+                    postSlot(scanner, users, exchange);
+                    break;
+                case "2":
+                    viewSlots(exchange);
+                    break;
+                case "3":
+                    checkTrade(scanner, exchange);
+                    break;
+                case "4":
+                    executeTrade(scanner, users, exchange);
+                    break;
+                case "5":
+                    active = false;
+                    break;
+                default:
+                    System.out.println("Invalid choice. Enter a number 1-5.");
             }
         }
 
@@ -54,11 +68,11 @@ public class DrawExchangeInteractive {
     /** Seeds demo users so the feature can be tested immediately. */
     private static void seedUsers(Users users) {
         users.add(new User("alicia.park@pomona.edu", "aliciapark", "pass",
-            LocalDateTime.parse("Apr 8, 2025 5:03 PM", FORMATTER)));
+                LocalDateTime.parse("Apr 8, 2025 5:03 PM", FORMATTER)));
         users.add(new User("bryson.young@pomona.edu", "brysonyoung", "pass",
-            LocalDateTime.parse("Apr 8, 2025 6:42 PM", FORMATTER)));
+                LocalDateTime.parse("Apr 8, 2025 6:42 PM", FORMATTER)));
         users.add(new User("carol.rivera@pomona.edu", "carolrivera", "pass",
-            LocalDateTime.parse("Apr 9, 2025 7:06 PM", FORMATTER)));
+                LocalDateTime.parse("Apr 9, 2025 7:06 PM", FORMATTER)));
     }
 
     private static void postSlot(Scanner scanner, Users users, DrawExchange exchange) {

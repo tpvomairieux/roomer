@@ -7,15 +7,18 @@
 
 package roomer;
 
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 
+import roomer.interfaces.Building;
+import roomer.interfaces.Room;
+import roomer.interfaces.Rooms;
+
 public class RoomInteractive {
 
     public static void main(String[] args) {
-        
+
         Scanner scanner = new Scanner(System.in);
 
         Rooms rooms;
@@ -36,13 +39,13 @@ public class RoomInteractive {
 
         boolean active = true;
 
-
         while (active) {
 
             System.out.println("\nChoose from the following options! Please enter the number of your choice.");
             System.out.println("1. View all listings");
             System.out.println("2. Search for a listing");
-            System.out.println("3. Add a listing"); // We would need to figure out how to write to the excel file. Need to watch more YT vids. For now just store new listings in memory.
+            System.out.println("3. Add a listing"); // We would need to figure out how to write to the excel file. Need
+                                                    // to watch more YT vids. For now just store new listings in memory.
             System.out.println("4. Remove your listing");
             System.out.println("5. End");
 
@@ -53,7 +56,7 @@ public class RoomInteractive {
                 case "1":
                     viewListings(scanner, rooms);
                     break;
-                
+
                 case "2":
                     searchForListing(scanner, rooms);
                     break;
@@ -79,7 +82,7 @@ public class RoomInteractive {
         System.out.println("See you again!");
         scanner.close();
     }
-    
+
     /**
      * 
      * @param scanner
@@ -218,7 +221,7 @@ public class RoomInteractive {
         boolean hasAC = scanner.nextLine().equalsIgnoreCase("yes");
 
         // Students would never know this lol
-        Room newRoom = new Room(rawName,sqft,null,null, null, occupancy, hasAC);
+        Room newRoom = new Room(rawName, sqft, null, null, null, occupancy, hasAC);
 
         rooms.add(newRoom);
 

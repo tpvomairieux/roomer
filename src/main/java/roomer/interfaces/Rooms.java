@@ -4,12 +4,14 @@
  * @author Evan Tran, Phu Vo, Ronnie Ho
  *
  */
-package roomer;
+package roomer.interfaces;
 
 import java.util.HashMap;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import roomer.RoomDataLoader;
 
 public class Rooms {
 
@@ -28,7 +30,7 @@ public class Rooms {
     }
 
     public int size() {
-    
+
         return rooms.size();
     }
 
@@ -50,9 +52,7 @@ public class Rooms {
 
         List<Room> result = new ArrayList<>();
 
-
         for (Room room : rooms.values()) {
-
 
             if (room.getBuilding() == building) {
 
@@ -66,14 +66,12 @@ public class Rooms {
      * 
      * @param occupancy
      * @return
-     */    
+     */
     public List<Room> filterByOccupancy(int occupancy) {
 
         List<Room> result = new ArrayList<>();
 
-
         for (Room room : rooms.values()) {
-
 
             if (room.getOccupancy() == occupancy) {
 
@@ -92,9 +90,7 @@ public class Rooms {
 
         List<Room> result = new ArrayList<>();
 
-
         for (Room room : rooms.values()) {
-
 
             if (room.hasAC() == hasAC) {
 
@@ -114,11 +110,9 @@ public class Rooms {
 
         List<Room> result = new ArrayList<>();
 
-
         for (Room room : rooms.values()) {
 
             int sqft = room.getSquareFeet();
-
 
             if (sqft >= min && sqft <= max) {
 
@@ -137,7 +131,7 @@ public class Rooms {
      * @param maxSize
      * @return
      */
-    public List<Room> filter( Building building, Integer occupancy, Boolean hasAC, Integer minSize, Integer maxSize) {
+    public List<Room> filter(Building building, Integer occupancy, Boolean hasAC, Integer minSize, Integer maxSize) {
 
         List<Room> result = new ArrayList<>();
 
@@ -183,7 +177,7 @@ public class Rooms {
             Rooms rooms = RoomDataLoader.load("CS62 Final Project Data.xlsx");
 
             System.out.println("Loaded " + rooms.size() + " rooms.");
-            
+
             for (Room r : rooms.getAllRooms()) {
                 System.out.println("Room: " + r.getRoomName() + " | Occupancy: " + r.getOccupancy());
             }
@@ -198,6 +192,5 @@ public class Rooms {
             e.printStackTrace();
         }
     }
-
 
 }

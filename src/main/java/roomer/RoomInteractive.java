@@ -43,6 +43,7 @@ public class RoomInteractive {
             System.out.println("\nChoose from the following options! Please enter the number of your choice.");
             System.out.println("1. View all rooms");
             System.out.println("2. Search for a room");
+            // Remove methods 3 and 4 from public
             System.out.println("3. Add a time"); // We would need to figure out how to write to the excel file. Need
                                                  // to watch more YT vids. For now just store new times in memory.
             System.out.println("4. Remove your time");
@@ -203,7 +204,7 @@ public class RoomInteractive {
      * @param scanner
      * @param rooms
      */
-    private static void addListing(Scanner scanner, Rooms rooms) { // Should be illegal function, remove
+    private static void addRoom(Scanner scanner, Rooms rooms) { // Admin function?
 
         System.out.println("\nAdd New Listing-- please include room details!");
 
@@ -232,7 +233,7 @@ public class RoomInteractive {
      * @param scanner
      * @param rooms
      */
-    private static void removeListing(Scanner scanner, Rooms rooms) {
+    private static void removeRoom(Scanner scanner, Rooms rooms) {
 
         System.out.print("Enter room name to remove: ");
         String name = scanner.nextLine();

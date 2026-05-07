@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import roomer.interfaces.DrawSlot;
 import roomer.interfaces.User;
 import roomer.interfaces.Users;
 

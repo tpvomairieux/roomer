@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
+import roomer.interfaces.DrawSlot;
 import roomer.interfaces.User;
 import roomer.interfaces.Users;
 
@@ -67,11 +68,11 @@ public class DrawExchangeInteractive {
 
     /** Seeds demo users so the feature can be tested immediately. */
     private static void seedUsers(Users users) {
-        users.add(new User("alicia.park@pomona.edu", "aliciapark", "pass",
+        users.add(new User("alicia.park@pomona.edu", "pass",
                 LocalDateTime.parse("Apr 8, 2025 5:03 PM", FORMATTER)));
-        users.add(new User("bryson.young@pomona.edu", "brysonyoung", "pass",
+        users.add(new User("bryson.young@pomona.edu", "pass",
                 LocalDateTime.parse("Apr 8, 2025 6:42 PM", FORMATTER)));
-        users.add(new User("carol.rivera@pomona.edu", "carolrivera", "pass",
+        users.add(new User("carol.rivera@pomona.edu", "pass",
                 LocalDateTime.parse("Apr 9, 2025 7:06 PM", FORMATTER)));
     }
 

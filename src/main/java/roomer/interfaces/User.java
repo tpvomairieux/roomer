@@ -13,7 +13,8 @@ public class User {
     String email;
     String password;
     LocalDateTime drawTime;
-    LocalDateTime swapTime;
+    double balance;
+    boolean admin; // How do we want to set?
 
     public User(String email, String password, LocalDateTime drawTime) {
         this.email = email;
@@ -21,6 +22,24 @@ public class User {
         this.drawTime = drawTime;
     }
 
-    // TODO
+    public String getEmail() {
+        return email;
+    }
+
+    public void addMoney(double amount) { // Temp, can replace
+        this.balance += amount;
+    }
+
+    public void subtractMoney(double amount) {
+        this.balance -= amount;
+    }
+
+    public LocalDateTime getDrawTime() { // Method for printing out better
+        return drawTime;
+    }
+
+    public void setTime(LocalDateTime newTime) {
+        this.drawTime = newTime;
+    }
 
 }

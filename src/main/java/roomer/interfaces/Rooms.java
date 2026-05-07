@@ -92,7 +92,7 @@ public class Rooms {
 
         for (Room room : rooms.values()) {
 
-            if (room.hasAC() == hasAC) {
+            if (room.hasxAC() == hasAC) {
 
                 result.add(room);
             }

@@ -40,13 +40,12 @@ public class RoomInteractive {
         boolean active = true;
 
         while (active) {
-
             System.out.println("\nChoose from the following options! Please enter the number of your choice.");
-            System.out.println("1. View all listings");
-            System.out.println("2. Search for a listing");
-            System.out.println("3. Add a listing"); // We would need to figure out how to write to the excel file. Need
-                                                    // to watch more YT vids. For now just store new listings in memory.
-            System.out.println("4. Remove your listing");
+            System.out.println("1. View all rooms");
+            System.out.println("2. Search for a room");
+            System.out.println("3. Add a time"); // We would need to figure out how to write to the excel file. Need
+                                                 // to watch more YT vids. For now just store new times in memory.
+            System.out.println("4. Remove your time");
             System.out.println("5. End");
 
             String choice = scanner.nextLine();
@@ -54,18 +53,18 @@ public class RoomInteractive {
             switch (choice) {
 
                 case "1":
-                    viewListings(scanner, rooms);
+                    viewRooms(scanner, rooms);
                     break;
 
                 case "2":
-                    searchForListing(scanner, rooms);
+                    searchForRoom(scanner, rooms);
                     break;
 
-                case "3":
+                case "3": // Change
                     addListing(scanner, rooms);
                     break;
 
-                case "4":
+                case "4": // Change
                     removeListing(scanner, rooms);
                     break;
 
@@ -88,7 +87,7 @@ public class RoomInteractive {
      * @param scanner
      * @param rooms
      */
-    private static void viewListings(Scanner scanner, Rooms rooms) {
+    private static void viewRooms(Scanner scanner, Rooms rooms) {
 
         System.out.println("\nView options:");
         System.out.println("1. Show all available rooms.");
@@ -181,7 +180,7 @@ public class RoomInteractive {
      * @param scanner
      * @param rooms
      */
-    private static void searchForListing(Scanner scanner, Rooms rooms) {
+    private static void searchForRoom(Scanner scanner, Rooms rooms) {
 
         System.out.print("Enter room name as [Dorm Building]-[Room Number]: ");
 
@@ -204,7 +203,7 @@ public class RoomInteractive {
      * @param scanner
      * @param rooms
      */
-    private static void addListing(Scanner scanner, Rooms rooms) {
+    private static void addListing(Scanner scanner, Rooms rooms) { // Should be illegal function, remove
 
         System.out.println("\nAdd New Listing-- please include room details!");
 

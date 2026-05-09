@@ -188,6 +188,7 @@ public class ListingTreeInterface {
 
     private static void purchaseListing(Scanner scanner, Users users, ListingTree tree) { // Ability to cancel?
         User buyer = new User();
+        User seller = new User();
         Listing sellerListing;
         Price listingInfo;
 
@@ -208,12 +209,18 @@ public class ListingTreeInterface {
             System.out.print("Enter seller's email: ");
             String email = scanner.nextLine();
 
-            if (!tree.containsEmail(email)) {
-                System.out.println("Seller's listing not found.");
+            seller = users.get(email);
+
+            if (buyer == null) {
+                System.out.println("User not found.");
             } else {
-                sellerListing = tree.find(email);
-                listingInfo = sellerListing.getPriceInfo();
-                break;
+                if (!tree.containsEmail(email)) {
+                    System.out.println("Seller's listing not found.");
+                } else {
+                    sellerListing = tree.find(email);
+                    listingInfo = sellerListing.getPriceInfo();
+                    break;
+                }
             }
         }
 
@@ -221,27 +228,43 @@ public class ListingTreeInterface {
             double minBid = listingInfo.getBuyerPrice() + 1;
             while (true) {
                 System.out.println(
-                        "To be elligible for " + sellerListing.getEmail()
+                        "To be eligible for " + sellerListing.getEmail()
                                 + "'s time, you would need to submit a bid of at least "
                                 + minBid + ". Please enter your bid:");
-                double bid = Double.parseDouble(scanner.nextLine());
+
+                double bid = Double.parseDouble(scanner.nextLine()); // Try Except
+
+                if (!checkBalance(buyer, bid)) {
+                    System.out.println(
+                            "Warning: User does not have enough money in account balance. Please add more and try again");
+                    return;
+                }
+
                 if (bid < minBid) {
-                    System.out.println("Warning: bid is not large enough.");
+                    System.out.println("Warning: Bid is not large enough.");
                 } else {
                     System.out.println("Bid of " + bid + " successfully submitted!");
                     break;
                 }
             }
+
         } else {
+            double minBid = listingInfo.getSellerPrice();
             while (true) {
                 System.out.println(
                         "Purchase " + sellerListing.getEmail()
-                                + "'s time for " + listingInfo.getSellerPrice() + "?");
+                                + "'s time for " + minBid + "?");
                 System.out.println("1. Yes");
                 System.out.println("2. No");
                 int buy = Integer.parseInt(scanner.nextLine());
+                if (!checkBalance(buyer, minBid)) {
+                    System.out.println(
+                            "Warning: User does not have enough money in account balance. Please add more and try again");
+                    return;
+                }
                 if (buy == 1) {
-                    System.out.println("Purchase sucessfully submitted!");
+                    executePurchase(buyer, seller, minBid, tree);
+                    System.out.println("Purchase successfully submitted!");
                     break;
                 }
                 return;
@@ -249,34 +272,16 @@ public class ListingTreeInterface {
         }
     }
 
-    private static void checkTrade(Scanner scanner, DrawExchange exchange) { // TODO modify to work with listing tree
-        System.out.print("Enter first user's email: ");
-        String emailA = scanner.nextLine();
-        System.out.print("Enter second user's email: ");
-        String emailB = scanner.nextLine();
-        if (exchange.canTrade(emailA, emailB)) {
-            Listing slotA = exchange.getSlotByUser(emailA);
-            Listing slotB = exchange.getSlotByUser(emailB);
-            System.out.println("Trade is valid!");
-            System.out.println("  " + emailA + " would receive: " + slotB.getDrawTime());
-            System.out.println("  " + emailB + " would receive: " + slotA.getDrawTime());
-        } else {
-            System.out.println("Trade not possible. One or both users have not posted a draw time.");
-        }
+    private static boolean checkBalance(User user, double bid) {
+        return (user.getBalance() > bid);
     }
 
-    private static void executeTrade(Scanner scanner, Users users, DrawExchange exchange) {
-        System.out.print("Enter first user's email: ");
-        String emailA = scanner.nextLine();
-        System.out.print("Enter second user's email: ");
-        String emailB = scanner.nextLine();
-        boolean success = exchange.executeTrade(emailA, emailB, users);
-        if (success) {
-            System.out.println("Trade complete!");
-            System.out.println(emailA + "'s new draw time: " + users.get(emailA).getDrawTime());
-            System.out.println(emailB + "'s new draw time: " + users.get(emailB).getDrawTime());
-        } else {
-            System.out.println("Trade failed. Check that both users have posted draw times.");
-        }
+    private static void executePurchase(User buyer, User seller, double bid, ListingTree tree) {
+        LocalDateTime temp = buyer.getDrawTime();
+        buyer.setTime(seller.getDrawTime());
+        seller.setTime(temp);
+        tree.remove(seller.getEmail());
+        seller.addMoney(bid);
+        buyer.subtractMoney(bid);
     }
 }

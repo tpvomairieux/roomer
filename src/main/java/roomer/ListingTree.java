@@ -35,28 +35,30 @@ public class ListingTree {
     private final TreeMap<LocalDateTime, LinkedHashMap<String, Listing>> tree = new TreeMap<>();
 
     // Secondary index: listingId → drawTime, for O(log n) removals by id.
-    private final HashMap<String, LocalDateTime> idIndex = new HashMap<>();
+    private final HashMap<String, LocalDateTime> emailIndex = new HashMap<>();
 
     private int size = 0;
 
     // ── Mutators ─────────────────────────────────────────────────────────────
 
     /**
-     * Inserts a listing. Duplicate ids are rejected.
+     * Inserts a listing. Duplicate emailss are rejected.
      *
-     * @throws IllegalArgumentException if a listing with the same id already exists
+     * @throws IllegalArgumentException if a listing with the same email exists
      */
     public void add(Listing listing) {
-        Objects.requireNonNull(listing, "listing must not be null");
+        if (listing == null) {
+            throw new NullPointerException("Listing must not be null");
+        }
 
-        if (idIndex.containsKey(listing.getId())) {
-            throw new IllegalArgumentException("Listing id already present: " + listing.getId());
+        if (emailIndex.containsKey(listing.getEmail())) {
+            throw new IllegalArgumentException("User: " + listing.getEmail() + " already has listing.");
         }
 
         tree.computeIfAbsent(listing.getDrawTime(), k -> new LinkedHashMap<>())
-                .put(listing.getId(), listing);
+                .put(listing.getEmail(), listing);
 
-        idIndex.put(listing.getId(), listing.getDrawTime());
+        emailIndex.put(listing.getEmail(), listing.getDrawTime());
         size++;
     }
 
@@ -65,13 +67,13 @@ public class ListingTree {
      *
      * @return the removed listing, or {@code null} if not found
      */
-    public Listing removeById(String id) {
-        LocalDateTime key = idIndex.remove(id);
+    public Listing remove(String email) {
+        LocalDateTime key = emailIndex.remove(email);
         if (key == null)
             return null;
 
         LinkedHashMap<String, Listing> bucket = tree.get(key);
-        Listing removed = bucket.remove(id);
+        Listing removed = bucket.remove(email);
 
         if (bucket.isEmpty())
             tree.remove(key);
@@ -114,7 +116,7 @@ public class ListingTree {
         Iterator<Map.Entry<String, Listing>> it = entry.getValue().entrySet().iterator();
         Map.Entry<String, Listing> first = it.next();
         it.remove(); // remove from bucket
-        idIndex.remove(first.getKey());
+        emailIndex.remove(first.getKey());
         if (entry.getValue().isEmpty())
             tree.pollFirstEntry();
         size--;
@@ -138,15 +140,15 @@ public class ListingTree {
     }
 
     /**
-     * Looks up a listing by id in O(log n).
+     * Looks up a listing by email in O(log n).
      *
      * @return the listing, or {@code null} if not found
      */
-    public Listing findById(String id) {
-        LocalDateTime key = idIndex.get(id);
+    public Listing find(String email) {
+        LocalDateTime key = emailIndex.get(email);
         if (key == null)
             return null;
-        return tree.get(key).get(id);
+        return tree.get(key).get(email);
     }
 
     /**
@@ -163,8 +165,8 @@ public class ListingTree {
     }
 
     /** Returns {@code true} if the tree contains a listing with the given id. */
-    public boolean containsId(String id) {
-        return idIndex.containsKey(id);
+    public boolean containsId(String email) {
+        return emailIndex.containsKey(email);
     }
 
     /** Number of listings currently stored. */

@@ -16,7 +16,7 @@ import roomer.interfaces.Price;
 import roomer.interfaces.User;
 import roomer.interfaces.Users;
 
-public class DrawExchangeInteractive {
+public class ListingTreeInterface {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a",
             Locale.ENGLISH);
@@ -24,7 +24,7 @@ public class DrawExchangeInteractive {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Users users = new Users();
-        DrawExchange exchange = new DrawExchange();
+        ListingTree tree = new ListingTree();
 
         seedUsers(users);
 
@@ -33,7 +33,7 @@ public class DrawExchangeInteractive {
         boolean active = true;
 
         while (active) {
-            System.out.println("\nChoose an option:"); // Edit draws to include pricing
+            System.out.println("\nChoose an option:");
             System.out.println("1. Create a listing");
             System.out.println("2. View all posted listings");
             System.out.println("3. Check if a swap is possible");
@@ -44,16 +44,16 @@ public class DrawExchangeInteractive {
 
             switch (choice) {
                 case "1":
-                    postSlot(scanner, users, exchange);
+                    postSlot(scanner, users, tree);
                     break;
                 case "2":
-                    viewSlots(exchange);
+                    viewSlots(tree);
                     break;
                 case "3":
-                    checkTrade(scanner, exchange);
+                    checkTrade(scanner, tree);
                     break;
                 case "4":
-                    executeTrade(scanner, users, exchange);
+                    executeTrade(scanner, users, tree);
                     break;
                 case "5":
                     active = false;
@@ -77,8 +77,12 @@ public class DrawExchangeInteractive {
                 LocalDateTime.parse("Apr 9, 2025 7:06 PM", FORMATTER)));
     }
 
-    // Can implement login system if we build website GUI,
-    private static void postSlot(Scanner scanner, Users users, DrawExchange exchange) { // Testing please
+    // Can implement login system if we build website GUI
+
+    // This method serves as the frontend for getting user information for listing,
+    // and passing it to drawexchange.java
+
+    private static void postSlot(Scanner scanner, Users users, ListingTree tree) { // Testing please
         User user = new User();
 
         while (true) { // Checks if user is in system and therefore eligible to make a listing
@@ -154,16 +158,24 @@ public class DrawExchangeInteractive {
             break;
         }
 
-        Listing slot = exchange.postSlot(user, priceInfo);
+        try {
+            tree.add(new Listing(user.getEmail(), user.getDrawTime(), priceInfo));
+        } catch (NullPointerException e) {
+            System.out.println("Could not post: " + e);
 
-        if (slot == null) {
-            System.out.println("Could not post. You may already have an active posting.");
-        } else {
-            System.out.println("Posted: " + slot);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Could not post: " + e);
         }
+
+        System.out.println("New listing posted");
     }
 
-    private static void viewSlots(DrawExchange exchange) { // TODO merge with listing tree
+    // private static void removeSlot() for later
+
+    // This method serves as the frontend for getting the listings
+    // Maybe add sorting here?
+
+    private static void viewSlots(DrawExchange exchange) {
         List<Listing> slots = exchange.getAllSlots();
         if (slots.isEmpty()) {
             System.out.println("No draw times posted for exchange.");
@@ -177,6 +189,7 @@ public class DrawExchangeInteractive {
 
     // Method works, ok user design. Buyers should not have to create listings to
     // exchange
+
     private static void checkTrade(Scanner scanner, DrawExchange exchange) { // TODO modify to work with listing tree
         System.out.print("Enter first user's email: ");
         String emailA = scanner.nextLine();

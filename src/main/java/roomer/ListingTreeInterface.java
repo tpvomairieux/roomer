@@ -36,7 +36,7 @@ public class ListingTreeInterface {
             System.out.println("\nChoose an option:");
             System.out.println("1. Create a listing");
             System.out.println("2. View all posted listings");
-            System.out.println("3. Check if a swap is possible");
+            System.out.println("3. Purchase a listing");
             System.out.println("4. Exchange times");
             System.out.println("5. Exit");
 
@@ -50,7 +50,7 @@ public class ListingTreeInterface {
                     viewSlots(tree);
                     break;
                 case "3":
-                    checkTrade(scanner, tree);
+                    purchase(scanner, users, tree);
                     break;
                 case "4":
                     executeTrade(scanner, users, tree);
@@ -175,20 +175,79 @@ public class ListingTreeInterface {
     // This method serves as the frontend for getting the listings
     // Maybe add sorting here?
 
-    private static void viewSlots(DrawExchange exchange) {
-        List<Listing> slots = exchange.getAllSlots();
-        if (slots.isEmpty()) {
-            System.out.println("No draw times posted for exchange.");
-            return;
-        }
-        System.out.println("\nAll posted draw times:");
-        for (Listing slot : slots) {
-            System.out.println("  " + slot);
+    private static void viewSlots(ListingTree tree) {
+        System.out.println("All Listings: "); // Sorted from earliest draw to latest
+        List<Listing> listings = tree.allSorted();
+        for (Listing listing : listings) {
+            System.out.println(listing);
         }
     }
 
     // Method works, ok user design. Buyers should not have to create listings to
     // exchange
+
+    private static void purchaseListing(Scanner scanner, Users users, ListingTree tree) { // Ability to cancel?
+        User buyer = new User();
+        Listing sellerListing;
+        Price listingInfo;
+
+        while (true) { // Checks if user is in system and therefore eligible to buy a listing
+            System.out.print("Enter your email: ");
+            String email = scanner.nextLine();
+
+            buyer = users.get(email);
+
+            if (buyer == null) {
+                System.out.println("User not found.");
+            } else {
+                break;
+            }
+        }
+
+        while (true) { // A little clunky, taking suggestions
+            System.out.print("Enter seller's email: ");
+            String email = scanner.nextLine();
+
+            if (!tree.containsEmail(email)) {
+                System.out.println("Seller's listing not found.");
+            } else {
+                sellerListing = tree.find(email);
+                listingInfo = sellerListing.getPriceInfo();
+                break;
+            }
+        }
+
+        if (listingInfo.isAuction()) { // Check if user has enough money
+            double minBid = listingInfo.getBuyerPrice() + 1;
+            while (true) {
+                System.out.println(
+                        "To be elligible for " + sellerListing.getEmail()
+                                + "'s time, you would need to submit a bid of at least "
+                                + minBid + ". Please enter your bid:");
+                double bid = Double.parseDouble(scanner.nextLine());
+                if (bid < minBid) {
+                    System.out.println("Warning: bid is not large enough.");
+                } else {
+                    System.out.println("Bid of " + bid + " successfully submitted!");
+                    break;
+                }
+            }
+        } else {
+            while (true) {
+                System.out.println(
+                        "Purchase " + sellerListing.getEmail()
+                                + "'s time for " + listingInfo.getSellerPrice() + "?");
+                System.out.println("1. Yes");
+                System.out.println("2. No");
+                int buy = Integer.parseInt(scanner.nextLine());
+                if (buy == 1) {
+                    System.out.println("Purchase sucessfully submitted!");
+                    break;
+                }
+                return;
+            }
+        }
+    }
 
     private static void checkTrade(Scanner scanner, DrawExchange exchange) { // TODO modify to work with listing tree
         System.out.print("Enter first user's email: ");

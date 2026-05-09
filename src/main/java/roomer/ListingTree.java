@@ -165,7 +165,7 @@ public class ListingTree {
     }
 
     /** Returns {@code true} if the tree contains a listing with the given id. */
-    public boolean containsId(String email) {
+    public boolean containsEmail(String email) {
         return emailIndex.containsKey(email);
     }
 

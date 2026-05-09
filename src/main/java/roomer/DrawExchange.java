@@ -45,7 +45,7 @@ public class DrawExchange {
             return null;
         }
         String id = "slot-" + nextId++;
-        Listing slot = new Listing(id, user.getEmail(), user.getDrawTime(), priceInfo);
+        Listing slot = new Listing(user.getEmail(), user.getDrawTime(), priceInfo);
         slotById.put(id, slot);
         userToSlotId.put(user.getEmail(), id);
         return slot;

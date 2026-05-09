@@ -11,7 +11,7 @@ public class Listing {
 
     private final String ownerEmail;
     private final LocalDateTime drawTime;
-    private Price priceInfo;
+    private final Price priceInfo; // See Price.java for more info
 
     public Listing(String ownerEmail, LocalDateTime drawTime, Price priceInfo) {
         this.ownerEmail = ownerEmail;
@@ -27,8 +27,16 @@ public class Listing {
         return drawTime;
     }
 
+    public Price getPriceInfo() {
+        return priceInfo;
+    }
+
     @Override
     public String toString() {
-        return "Owner: " + ownerEmail + " | Draw Time: " + drawTime;
+        if (priceInfo.isAuction()) {
+            return "Owner: " + ownerEmail + " | Draw Time: " + drawTime + " | Auction" + " | Highest Bid: "
+                    + priceInfo.buyerPrice;
+        }
+        return "Owner: " + ownerEmail + " | Draw Time: " + drawTime + " | BIN " + " | Price: " + priceInfo.sellerPrice;
     }
 }

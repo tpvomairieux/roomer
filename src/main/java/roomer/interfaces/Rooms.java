@@ -6,9 +6,9 @@
  */
 package roomer.interfaces;
 
-import java.util.HashMap;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import roomer.RoomDataLoader;
@@ -92,7 +92,7 @@ public class Rooms {
 
         for (Room room : rooms.values()) {
 
-            if (room.hasxAC() == hasAC) {
+            if (room.hasAC() == hasAC) {
 
                 result.add(room);
             }

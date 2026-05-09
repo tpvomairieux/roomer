@@ -1,6 +1,6 @@
 /**
  * Manages all posted draw-time exchange listings.
- * Uses two HashMaps: one maps slot ID to DrawSlot,
+ * Uses two HashMaps: one maps slot ID to Listing,
  * the other maps user email to their slot ID.
  *
  * @author Evan Tran, Phu Vo, Ronnie Ho
@@ -12,14 +12,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import roomer.interfaces.DrawSlot;
+import roomer.interfaces.Listing;
+import roomer.interfaces.Price;
 import roomer.interfaces.User;
 import roomer.interfaces.Users;
 
 public class DrawExchange {
 
-    /** Maps a unique slot ID to its DrawSlot. */
-    private HashMap<String, DrawSlot> slotById;
+    /** Maps a unique slot ID to its Listing. */
+    private HashMap<String, Listing> slotById;
 
     /** Maps a user's email to the ID of their posted slot. One slot per user. */
     private HashMap<String, String> userToSlotId;
@@ -36,15 +37,15 @@ public class DrawExchange {
      * A user may only have one active posting at a time.
      *
      * @param user the user posting their draw time
-     * @return the created DrawSlot, or null if user has no draw time or already
+     * @return the created Listing, or null if user has no draw time or already
      *         posted
      */
-    public DrawSlot postSlot(User user) {
+    public Listing postSlot(User user, Price priceInfo) {
         if (user.getDrawTime() == null || userToSlotId.containsKey(user.getEmail())) {
             return null;
         }
         String id = "slot-" + nextId++;
-        DrawSlot slot = new DrawSlot(id, user.getEmail(), user.getDrawTime());
+        Listing slot = new Listing(id, user.getEmail(), user.getDrawTime(), priceInfo);
         slotById.put(id, slot);
         userToSlotId.put(user.getEmail(), id);
         return slot;
@@ -70,9 +71,9 @@ public class DrawExchange {
      * Gets a user's posted slot by their email.
      *
      * @param email the user's email
-     * @return their DrawSlot, or null if they have no active posting
+     * @return their Listing, or null if they have no active posting
      */
-    public DrawSlot getSlotByUser(String email) {
+    public Listing getSlotByUser(String email) {
         String slotId = userToSlotId.get(email);
         if (slotId == null) {
             return null;
@@ -85,7 +86,7 @@ public class DrawExchange {
      *
      * @return list of all DrawSlots
      */
-    public List<DrawSlot> getAllSlots() {
+    public List<Listing> getAllSlots() {
         return new ArrayList<>(slotById.values());
     }
 

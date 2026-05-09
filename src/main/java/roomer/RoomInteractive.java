@@ -62,11 +62,11 @@ public class RoomInteractive {
                     break;
 
                 case "3": // Change
-                    addListing(scanner, rooms);
+                    addRoom(scanner, rooms);
                     break;
 
                 case "4": // Change
-                    removeListing(scanner, rooms);
+                    removeRoom(scanner, rooms);
                     break;
 
                 case "5":

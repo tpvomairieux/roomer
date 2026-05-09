@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
-import roomer.interfaces.DrawSlot;
+import roomer.interfaces.Listing;
+import roomer.interfaces.Price;
 import roomer.interfaces.User;
 import roomer.interfaces.Users;
 
@@ -32,11 +33,11 @@ public class DrawExchangeInteractive {
         boolean active = true;
 
         while (active) {
-            System.out.println("\nChoose an option:");
-            System.out.println("1. Post your draw time for exchange");
-            System.out.println("2. View all posted draw times");
-            System.out.println("3. Check if a trade is possible");
-            System.out.println("4. Execute a trade");
+            System.out.println("\nChoose an option:"); // Edit draws to include pricing
+            System.out.println("1. Create a listing");
+            System.out.println("2. View all posted listings");
+            System.out.println("3. Check if a swap is possible");
+            System.out.println("4. Exchange times");
             System.out.println("5. Exit");
 
             String choice = scanner.nextLine();
@@ -76,6 +77,7 @@ public class DrawExchangeInteractive {
                 LocalDateTime.parse("Apr 9, 2025 7:06 PM", FORMATTER)));
     }
 
+    // Can implement login system if we build website GUI,
     private static void postSlot(Scanner scanner, Users users, DrawExchange exchange) {
         System.out.print("Enter your email: ");
         String email = scanner.nextLine();
@@ -84,8 +86,28 @@ public class DrawExchangeInteractive {
             System.out.println("User not found.");
             return;
         }
-        DrawSlot slot = exchange.postSlot(user);
-        if (slot == null) {
+
+        System.out.print("How would you like to list your time? ");
+        System.out.println("1. Auction");
+        System.out.println("2. Buy-It-Now");
+
+        String choice = scanner.nextLine();
+
+        switch (choice) {
+            case "1":
+                System.out.print("What should the minimum bid be? ");
+                double minBid = Double.parseDouble(scanner.nextLine());
+                Price auctionInfo = new Price(true, minBid);
+
+            case "2":
+                System.out.print("What should the BIN price be? ");
+                double binPrice = Double.parseDouble(scanner.nextLine());
+                Price binInfoPrice = new Price(false, binPrice);
+        }
+
+        Listing slot = exchange.postSlot(user); // What do
+
+        if (slot == null) { // Surely != null?
             System.out.println("Could not post. You may already have an active posting.");
         } else {
             System.out.println("Posted: " + slot);
@@ -93,25 +115,27 @@ public class DrawExchangeInteractive {
     }
 
     private static void viewSlots(DrawExchange exchange) {
-        List<DrawSlot> slots = exchange.getAllSlots();
+        List<Listing> slots = exchange.getAllSlots();
         if (slots.isEmpty()) {
             System.out.println("No draw times posted for exchange.");
             return;
         }
         System.out.println("\nAll posted draw times:");
-        for (DrawSlot slot : slots) {
+        for (Listing slot : slots) {
             System.out.println("  " + slot);
         }
     }
 
+    // Method works, ok user design. Buyers should not have to create listings to
+    // exchange
     private static void checkTrade(Scanner scanner, DrawExchange exchange) {
         System.out.print("Enter first user's email: ");
         String emailA = scanner.nextLine();
         System.out.print("Enter second user's email: ");
         String emailB = scanner.nextLine();
         if (exchange.canTrade(emailA, emailB)) {
-            DrawSlot slotA = exchange.getSlotByUser(emailA);
-            DrawSlot slotB = exchange.getSlotByUser(emailB);
+            Listing slotA = exchange.getSlotByUser(emailA);
+            Listing slotB = exchange.getSlotByUser(emailB);
             System.out.println("Trade is valid!");
             System.out.println("  " + emailA + " would receive: " + slotB.getDrawTime());
             System.out.println("  " + emailB + " would receive: " + slotA.getDrawTime());

@@ -22,6 +22,10 @@ public class User {
         this.drawTime = drawTime;
     }
 
+    public User() {
+
+    }
+
     public String getEmail() {
         return email;
     }

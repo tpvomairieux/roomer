@@ -78,43 +78,92 @@ public class DrawExchangeInteractive {
     }
 
     // Can implement login system if we build website GUI,
-    private static void postSlot(Scanner scanner, Users users, DrawExchange exchange) {
-        System.out.print("Enter your email: ");
-        String email = scanner.nextLine();
-        User user = users.get(email);
-        if (user == null) {
-            System.out.println("User not found.");
-            return;
+    private static void postSlot(Scanner scanner, Users users, DrawExchange exchange) { // Testing please
+        User user = new User();
+
+        while (true) { // Checks if user is in system and therefore eligible to make a listing
+            System.out.print("Enter your email: ");
+            String email = scanner.nextLine();
+
+            user = users.get(email);
+
+            if (user == null) {
+                System.out.println("User not found.");
+            } else {
+                break;
+            }
         }
 
-        System.out.print("How would you like to list your time? ");
-        System.out.println("1. Auction");
-        System.out.println("2. Buy-It-Now");
+        Price priceInfo = new Price();
 
-        String choice = scanner.nextLine();
+        while (true) { // Checks if user's listing is valid
+            System.out.println("How would you like to list your time?");
+            System.out.println("1. Auction");
+            System.out.println("2. Buy-It-Now");
+            System.out.println("3. Cancel");
 
-        switch (choice) {
-            case "1":
-                System.out.print("What should the minimum bid be? ");
-                double minBid = Double.parseDouble(scanner.nextLine());
-                Price auctionInfo = new Price(true, minBid);
+            String choice = scanner.nextLine();
 
-            case "2":
-                System.out.print("What should the BIN price be? ");
-                double binPrice = Double.parseDouble(scanner.nextLine());
-                Price binInfoPrice = new Price(false, binPrice);
+            switch (choice) {
+                case "1":
+                    double minBid;
+                    while (true) {
+                        System.out.println("What should the minimum bid be?");
+                        try {
+                            minBid = Double.parseDouble(scanner.nextLine());
+                            if (minBid <= 0) {
+                                System.out.println("Warning: minimum bid must be greater than 0.");
+                                continue;
+                            }
+                            break;
+                        } catch (NumberFormatException e) {
+                            System.out.println("Warning: Please enter a valid number.");
+                        }
+                    }
+                    priceInfo.setAuction(true);
+                    priceInfo.setSeller(minBid);
+                    break;
+
+                case "2":
+                    double binPrice;
+                    while (true) {
+                        System.out.println("What should the BIN price be?");
+                        try {
+                            binPrice = Double.parseDouble(scanner.nextLine());
+                            if (binPrice <= 0) {
+                                System.out.println("Warning: BIN price must be greater than 0.");
+                                continue;
+                            }
+                            break;
+                        } catch (NumberFormatException e) {
+                            System.out.println("Warning: Please enter a valid number.");
+                        }
+                    }
+                    priceInfo.setAuction(false);
+                    priceInfo.setSeller(binPrice);
+                    break;
+
+                case "3":
+                    System.out.println("Cancelling listing.");
+                    return;
+
+                default:
+                    System.out.println("Invalid selection. Please try again!");
+                    continue;
+            }
+            break;
         }
 
-        Listing slot = exchange.postSlot(user); // What do
+        Listing slot = exchange.postSlot(user, priceInfo);
 
-        if (slot == null) { // Surely != null?
+        if (slot == null) {
             System.out.println("Could not post. You may already have an active posting.");
         } else {
             System.out.println("Posted: " + slot);
         }
     }
 
-    private static void viewSlots(DrawExchange exchange) {
+    private static void viewSlots(DrawExchange exchange) { // TODO merge with listing tree
         List<Listing> slots = exchange.getAllSlots();
         if (slots.isEmpty()) {
             System.out.println("No draw times posted for exchange.");
@@ -128,7 +177,7 @@ public class DrawExchangeInteractive {
 
     // Method works, ok user design. Buyers should not have to create listings to
     // exchange
-    private static void checkTrade(Scanner scanner, DrawExchange exchange) {
+    private static void checkTrade(Scanner scanner, DrawExchange exchange) { // TODO modify to work with listing tree
         System.out.print("Enter first user's email: ");
         String emailA = scanner.nextLine();
         System.out.print("Enter second user's email: ");

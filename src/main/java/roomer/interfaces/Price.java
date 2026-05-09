@@ -10,6 +10,10 @@ public class Price {
         this.sellerPrice = sellerPrice;
     }
 
+    public Price() { // is this needed?
+
+    }
+
     public boolean isAuction() {
         return auction;
     }
@@ -20,6 +24,14 @@ public class Price {
 
     public double getBuyerPrice() {
         return buyerPrice;
+    }
+
+    public void setAuction(boolean auction) {
+        this.auction = auction;
+    }
+
+    public void setSeller(double sellerPrice) {
+        this.sellerPrice = sellerPrice;
     }
 
     public void updateBuyer(double buyerPrice) {

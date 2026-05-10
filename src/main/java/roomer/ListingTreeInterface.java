@@ -173,7 +173,7 @@ public class ListingTreeInterface {
             }
         }
 
-        while (true) { // A little clunky, taking suggestions
+        while (true) {
             System.out.print("Enter seller's email: ");
             String email = scanner.nextLine();
 
@@ -193,9 +193,7 @@ public class ListingTreeInterface {
         }
 
         while (true) {
-            System.out.println(
-                    "Purchase " + sellerListing.getEmail()
-                            + "'s time for " + binPrice + "?");
+            System.out.println("Purchase " + sellerListing.getEmail() + "'s time for " + binPrice + "?");
             System.out.println("1. Yes");
             System.out.println("2. No");
             int buy = Integer.parseInt(scanner.nextLine());

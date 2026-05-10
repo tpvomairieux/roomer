@@ -37,8 +37,7 @@ public class ListingTreeInterface {
             System.out.println("1. Create a listing");
             System.out.println("2. View all posted listings");
             System.out.println("3. Purchase a listing");
-            System.out.println("4. Exchange times");
-            System.out.println("5. Exit");
+            System.out.println("4. Exit");
 
             String choice = scanner.nextLine();
 
@@ -50,12 +49,9 @@ public class ListingTreeInterface {
                     viewSlots(tree);
                     break;
                 case "3":
-                    purchase(scanner, users, tree);
+                    purchaseListing(scanner, users, tree);
                     break;
                 case "4":
-                    executeTrade(scanner, users, tree);
-                    break;
-                case "5":
                     active = false;
                     break;
                 default:
@@ -80,7 +76,7 @@ public class ListingTreeInterface {
     // Can implement login system if we build website GUI
 
     // This method serves as the frontend for getting user information for listing,
-    // and passing it to drawexchange.java
+    // and passing it to Listing Tree
 
     private static void postSlot(Scanner scanner, Users users, ListingTree tree) { // Testing please
         User user = new User();
@@ -183,9 +179,6 @@ public class ListingTreeInterface {
         }
     }
 
-    // Method works, ok user design. Buyers should not have to create listings to
-    // exchange
-
     private static void purchaseListing(Scanner scanner, Users users, ListingTree tree) { // Ability to cancel?
         User buyer = new User();
         User seller = new User();
@@ -243,7 +236,7 @@ public class ListingTreeInterface {
                 if (bid < minBid) {
                     System.out.println("Warning: Bid is not large enough.");
                 } else {
-                    System.out.println("Bid of " + bid + " successfully submitted!");
+                    System.out.println("Bid of " + bid + " successfully submitted!"); // Bid auction handling
                     break;
                 }
             }

@@ -1,3 +1,9 @@
+/**
+ * TreeMap object to store all user listings, supporting sorting by best time
+ *
+ * @author Evan Tran, Phu Vo, Ronnie Ho
+ */
+
 package roomer;
 
 import java.time.LocalDateTime;

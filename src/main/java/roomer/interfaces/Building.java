@@ -6,6 +6,12 @@
  */
 package roomer.interfaces;
 
+/**
+ * All buildings have constants to abide by: if they have air conditioning, and if they are north-campus or south campus. Room constants gathered from personal observation
+ * 
+ * and also the Pomona dorm information website, at the following: https://www.pomona.edu/administration/housing-residence-life/housing-selection-and-processes/residence-hall-descriptions.
+ * 
+ */
 public enum Building {
     Lyon(false, false),
     Blaisdell(true, false),

@@ -12,7 +12,6 @@ import java.util.Locale;
 import java.util.Scanner;
 
 import roomer.interfaces.Listing;
-import roomer.interfaces.Price;
 import roomer.interfaces.User;
 import roomer.interfaces.Users;
 
@@ -80,6 +79,7 @@ public class ListingTreeInterface {
 
     private static void postSlot(Scanner scanner, Users users, ListingTree tree) { // Testing please
         User user = new User();
+        double binPrice;
 
         while (true) { // Checks if user is in system and therefore eligible to make a listing
             System.out.print("Enter your email: ");
@@ -94,38 +94,15 @@ public class ListingTreeInterface {
             }
         }
 
-        Price priceInfo = new Price();
-
         while (true) { // Checks if user's listing is valid
-            System.out.println("How would you like to list your time?");
-            System.out.println("1. Auction");
-            System.out.println("2. Buy-It-Now");
-            System.out.println("3. Cancel");
+            System.out.println("Would you like to list your time?");
+            System.out.println("1. Confirm");
+            System.out.println("2. Cancel");
 
             String choice = scanner.nextLine();
 
             switch (choice) {
                 case "1":
-                    double minBid;
-                    while (true) {
-                        System.out.println("What should the minimum bid be?");
-                        try {
-                            minBid = Double.parseDouble(scanner.nextLine());
-                            if (minBid <= 0) {
-                                System.out.println("Warning: minimum bid must be greater than 0.");
-                                continue;
-                            }
-                            break;
-                        } catch (NumberFormatException e) {
-                            System.out.println("Warning: Please enter a valid number.");
-                        }
-                    }
-                    priceInfo.setAuction(true);
-                    priceInfo.setSeller(minBid);
-                    break;
-
-                case "2":
-                    double binPrice;
                     while (true) {
                         System.out.println("What should the BIN price be?");
                         try {
@@ -139,11 +116,9 @@ public class ListingTreeInterface {
                             System.out.println("Warning: Please enter a valid number.");
                         }
                     }
-                    priceInfo.setAuction(false);
-                    priceInfo.setSeller(binPrice);
                     break;
 
-                case "3":
+                case "2":
                     System.out.println("Cancelling listing.");
                     return;
 
@@ -155,7 +130,7 @@ public class ListingTreeInterface {
         }
 
         try {
-            tree.add(new Listing(user.getEmail(), user.getDrawTime(), priceInfo));
+            tree.add(new Listing(user.getEmail(), user.getDrawTime(), binPrice));
         } catch (NullPointerException e) {
             System.out.println("Could not post: " + e);
 
@@ -183,7 +158,7 @@ public class ListingTreeInterface {
         User buyer = new User();
         User seller = new User();
         Listing sellerListing;
-        Price listingInfo;
+        double binPrice;
 
         while (true) { // Checks if user is in system and therefore eligible to buy a listing
             System.out.print("Enter your email: ");
@@ -211,57 +186,30 @@ public class ListingTreeInterface {
                     System.out.println("Seller's listing not found.");
                 } else {
                     sellerListing = tree.find(email);
-                    listingInfo = sellerListing.getPriceInfo();
+                    binPrice = sellerListing.getPrice();
                     break;
                 }
             }
         }
 
-        if (listingInfo.isAuction()) { // Check if user has enough money
-            double minBid = listingInfo.getBuyerPrice() + 1;
-            while (true) {
+        while (true) {
+            System.out.println(
+                    "Purchase " + sellerListing.getEmail()
+                            + "'s time for " + binPrice + "?");
+            System.out.println("1. Yes");
+            System.out.println("2. No");
+            int buy = Integer.parseInt(scanner.nextLine());
+            if (!checkBalance(buyer, binPrice)) {
                 System.out.println(
-                        "To be eligible for " + sellerListing.getEmail()
-                                + "'s time, you would need to submit a bid of at least "
-                                + minBid + ". Please enter your bid:");
-
-                double bid = Double.parseDouble(scanner.nextLine()); // Try Except
-
-                if (!checkBalance(buyer, bid)) {
-                    System.out.println(
-                            "Warning: User does not have enough money in account balance. Please add more and try again");
-                    return;
-                }
-
-                if (bid < minBid) {
-                    System.out.println("Warning: Bid is not large enough.");
-                } else {
-                    System.out.println("Bid of " + bid + " successfully submitted!"); // Bid auction handling
-                    break;
-                }
-            }
-
-        } else {
-            double minBid = listingInfo.getSellerPrice();
-            while (true) {
-                System.out.println(
-                        "Purchase " + sellerListing.getEmail()
-                                + "'s time for " + minBid + "?");
-                System.out.println("1. Yes");
-                System.out.println("2. No");
-                int buy = Integer.parseInt(scanner.nextLine());
-                if (!checkBalance(buyer, minBid)) {
-                    System.out.println(
-                            "Warning: User does not have enough money in account balance. Please add more and try again");
-                    return;
-                }
-                if (buy == 1) {
-                    executePurchase(buyer, seller, minBid, tree);
-                    System.out.println("Purchase successfully submitted!");
-                    break;
-                }
+                        "Warning: User does not have enough money in account balance. Please add more and try again");
                 return;
             }
+            if (buy == 1) {
+                executePurchase(buyer, seller, binPrice, tree);
+                System.out.println("Purchase successfully submitted!");
+                break;
+            }
+            return;
         }
     }
 

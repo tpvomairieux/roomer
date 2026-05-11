@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Roomer — Pomona Housing</title>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Open Sans', sans-serif; background: #fffdf4; color: #2c2c2c; }
+
+    header { background: #002D74; border-bottom: 3px solid #f0d060; padding: 24px 40px; }
+    header h1 { font-size: 1.9rem; font-weight: 700; color: white; }
+    header p  { font-size: 0.95rem; color: white; margin-top: 4px; }
+
+    main { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+    .tab  { padding: 10px 22px; cursor: pointer; background: white; border: 1px solid #e8e0c8; border-radius: 6px; font-size: 0.95rem; font-family: 'Open Sans', sans-serif; }
+    .tab:hover  { background: #fff8e1; }
+    .tab.active { background: #f0d060; color: #2c2c2c; border-color: #f0d060; font-weight: 600; }
+
+    .section        { display: none; }
+    .section.active { display: block; }
+
+    .card { background: white; border-radius: 8px; padding: 24px; margin-bottom: 20px; border: 1px solid #ece8d8; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+
+    h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #2c2c2c; }
+    h3 { font-size: 1.05rem; font-weight: 600; margin: 20px 0 10px; color: #555; }
+
+    .filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 16px; }
+    label { font-size: 0.9rem; color: #666; }
+
+    select, input[type="text"] {
+        display: block; margin-top: 4px; padding: 8px 10px;
+        border: 1px solid #ddd; border-radius: 5px;
+        font-size: 0.9rem; font-family: 'Open Sans', sans-serif; width: 190px;
+        background: #fffdf4;
+    }
+
+    button {
+        padding: 8px 18px; background: #f0d060; color: #2c2c2c;
+        border: none; border-radius: 5px; cursor: pointer;
+        font-size: 0.9rem; font-family: 'Open Sans', sans-serif; font-weight: 600;
+    }
+    button:hover { background: #e8c840; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 8px; }
+    th { background: #fff8e1; padding: 10px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ece8d8; }
+    td { padding: 9px 12px; border-bottom: 1px solid #f0ebe0; }
+    tr:hover td { background: #fffdf4; }
+
+    .inline { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+    .result { margin-top: 12px; padding: 12px; background: #fff8e1; border-radius: 5px; font-size: 0.9rem; min-height: 36px; border: 1px solid #ece8d8; }
+
+    .badge-yes { background: #d4edda; color: #155724; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
+    .badge-no  { background: #fdecea; color: #7a1c1c; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
+    .success { color: #2a7a2a; }
+    .error   { color: #c0392b; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Roomer</h1>
+    <p>Pomona College Housing Platform</p>
+</header>
+
+<main>
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('rooms', this)">Browse Rooms</div>
+        <div class="tab"        onclick="showTab('search', this)">Search</div>
+        <div class="tab"        onclick="showTab('exchange', this)">Draw Exchange</div>
+        <div class="tab"        onclick="showTab('marketplace', this)">Marketplace</div>
+    </div>
+
+    <!-- BROWSE ROOMS -->
+    <div id="rooms" class="section active">
+        <div class="card">
+            <h2>Browse Rooms</h2>
+            <div class="filters">
+                <label>Building
+                    <select id="building-filter">
+                        <option value="">Any</option>
+                        <option>Lyon</option><option>Blaisdell</option><option>Mudd</option>
+                        <option>Wig</option><option>Gibson</option><option>Harwood</option>
+                        <option>Oldenborg</option><option>Smiley</option><option>ClarkI</option>
+                        <option>ClarkIII</option><option>ClarkV</option><option>Lawry</option>
+                        <option>Norton</option><option>Dialynas</option><option>Sontag</option>
+                        <option>Walker</option>
+                    </select>
+                </label>
+                <label>Occupancy
+                    <select id="occupancy-filter">
+                        <option value="">Any</option>
+                        <option value="1">Single</option>
+                        <option value="2">Double</option>
+                        <option value="3">Triple</option>
+                    </select>
+                </label>
+                <label>AC
+                    <select id="ac-filter">
+                        <option value="">Any</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                </label>
+                <button onclick="loadRooms()">Filter</button>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Room</th><th>Building</th><th>Occupancy</th><th>Sq Ft</th><th>AC</th></tr>
+                </thead>
+                <tbody id="rooms-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div id="search" class="section">
+        <div class="card">
+            <h2>Search for a Room</h2>
+            <div class="inline">
+                <input type="text" id="search-input" placeholder="e.g. Walker-719" />
+                <button onclick="searchRoom()">Search</button>
+            </div>
+            <div id="search-result" class="result"></div>
+        </div>
+    </div>
+
+    <!-- DRAW EXCHANGE -->
+    <div id="exchange" class="section">
+        <div class="card">
+            <h2>Draw Time Exchange</h2>
+
+            <h3>Posted Draw Times</h3>
+            <button onclick="loadSlots()">Refresh</button>
+            <table>
+                <thead><tr><th>Slot ID</th><th>Owner</th><th>Draw Time</th></tr></thead>
+                <tbody id="slots-body"></tbody>
+            </table>
+
+            <h3>Post Your Draw Time</h3>
+            <div class="inline">
+                <input type="text" id="post-email" placeholder="Your email" />
+                <button onclick="postSlot()">Post</button>
+            </div>
+            <div id="post-result" class="result"></div>
+
+            <h3>Check if a Trade is Possible</h3>
+            <div class="inline">
+                <input type="text" id="check-emailA" placeholder="Your email" />
+                <input type="text" id="check-emailB" placeholder="Other user's email" />
+                <button onclick="checkTrade()">Check</button>
+            </div>
+            <div id="check-result" class="result"></div>
+
+            <h3>Execute Trade</h3>
+            <div class="inline">
+                <input type="text" id="trade-emailA" placeholder="Your email" />
+                <input type="text" id="trade-emailB" placeholder="Other user's email" />
+                <button onclick="executeTrade()">Execute Trade</button>
+            </div>
+            <div id="trade-result" class="result"></div>
+        </div>
+    </div>
+
+    <!-- MARKETPLACE -->
+    <div id="marketplace" class="section">
+        <div class="card">
+            <h2>Marketplace</h2>
+            <p style="color:#888;">Coming soon — marketplace feature in progress.</p>
+        </div>
+    </div>
+</main>
+
+<script>
+    function showTab(name, el) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(name).classList.add('active');
+        el.classList.add('active');
+        if (name === 'rooms')    loadRooms();
+        if (name === 'exchange') loadSlots();
+    }
+
+    async function loadRooms() {
+        const building  = document.getElementById('building-filter').value;
+        const occupancy = document.getElementById('occupancy-filter').value;
+        const ac        = document.getElementById('ac-filter').value;
+
+        let url = '/rooms/filter?';
+        if (building)  url += 'building='  + building  + '&';
+        if (occupancy) url += 'occupancy=' + occupancy + '&';
+        if (ac !== '')  url += 'ac=' + ac;
+
+        const res = await fetch(url);
+        const list = await res.json();
+        const tbody = document.getElementById('rooms-body');
+        tbody.innerHTML = '';
+        list.forEach(r => {
+            tbody.innerHTML += `<tr>
+                <td>${r.roomName}</td>
+                <td>${r.building}</td>
+                <td>${r.occupancy}</td>
+                <td>${r.sqft}</td>
+                <td><span class="${r.hasAC ? 'badge-yes' : 'badge-no'}">${r.hasAC ? 'Yes' : 'No'}</span></td>
+            </tr>`;
+        });
+    }
+
+    async function searchRoom() {
+        const name = document.getElementById('search-input').value.trim();
+        const res  = await fetch('/rooms/search?name=' + encodeURIComponent(name));
+        const div  = document.getElementById('search-result');
+        if (res.ok) {
+            const r = await res.json();
+            div.innerHTML = `<strong>${r.roomName}</strong><br>
+                Building: ${r.building} &nbsp;|&nbsp;
+                Occupancy: ${r.occupancy} &nbsp;|&nbsp;
+                ${r.sqft} sq ft &nbsp;|&nbsp;
+                AC: ${r.hasAC ? 'Yes' : 'No'}`;
+        } else {
+            div.innerHTML = '<span class="error">Room not found.</span>';
+        }
+    }
+
+    async function loadSlots() {
+        const res   = await fetch('/exchange/slots');
+        const slots = await res.json();
+        const tbody = document.getElementById('slots-body');
+        tbody.innerHTML = '';
+        if (slots.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#888">No draw times posted yet.</td></tr>';
+        } else {
+            slots.forEach(s => {
+                tbody.innerHTML += `<tr>
+                    <td>${s.id}</td>
+                    <td>${s.ownerEmail}</td>
+                    <td>${s.drawTime}</td>
+                </tr>`;
+            });
+        }
+    }
+
+    async function postSlot() {
+        const email = document.getElementById('post-email').value.trim();
+        const res   = await fetch('/exchange/post?email=' + encodeURIComponent(email));
+        const div   = document.getElementById('post-result');
+        if (res.ok) {
+            const slot = await res.json();
+            div.innerHTML = '<span class="success">Posted! Slot ID: ' + slot.id + '</span>';
+            loadSlots();
+        } else {
+            const err = await res.json();
+            div.innerHTML = '<span class="error">Error: ' + err.error + '</span>';
+        }
+    }
+
+    async function checkTrade() {
+        const a   = document.getElementById('check-emailA').value.trim();
+        const b   = document.getElementById('check-emailB').value.trim();
+        const res = await fetch('/exchange/check?emailA=' + encodeURIComponent(a) + '&emailB=' + encodeURIComponent(b));
+        const data = await res.json();
+        const div  = document.getElementById('check-result');
+        div.innerHTML = data.canTrade
+            ? '<span class="success">Trade is valid! Both users have posted their draw times.</span>'
+            : '<span class="error">Trade not possible. One or both users have not posted a draw time.</span>';
+    }
+
+    async function executeTrade() {
+        const a   = document.getElementById('trade-emailA').value.trim();
+        const b   = document.getElementById('trade-emailB').value.trim();
+        const res = await fetch('/exchange/trade?emailA=' + encodeURIComponent(a) + '&emailB=' + encodeURIComponent(b));
+        const data = await res.json();
+        const div  = document.getElementById('trade-result');
+        if (data.success) {
+            div.innerHTML = '<span class="success">Trade complete! Draw times have been swapped.</span>';
+            loadSlots();
+        } else {
+            div.innerHTML = '<span class="error">Trade failed: ' + (data.error || 'Unknown error') + '</span>';
+        }
+    }
+
+    // Load rooms immediately when page opens
+    loadRooms();
+</script>
+
+</body>
+</html>

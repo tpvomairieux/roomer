@@ -5,17 +5,16 @@
  * @author Evan Tran, Phu Vo, Ronnie Ho
  *
  */
-package roomer;
+package roomer.interfaces;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-
 public class Room {
 
     final String rawName;
-    final int sqft; //Renamed to sqft from size
+    final int sqft; // Renamed to sqft from size
     final LocalDateTime time2023;
     final LocalDateTime time2024;
     final LocalDateTime time2025;
@@ -45,9 +44,8 @@ public class Room {
         String building = splitName[0].trim();
         setBuilding(building);
 
-
-        this.roomName = splitName[0].trim() + "-" + splitName[splitName.length - 1].trim(); // prevents white-spacing issue
-        
+        this.roomName = splitName[0].trim() + "-" + splitName[splitName.length - 1].trim(); // prevents white-spacing
+                                                                                            // issue
 
         if (splitName.length == 3) {
 
@@ -138,32 +136,32 @@ public class Room {
     }
 
     public Building getBuilding() {
-        
+
         return building;
     }
 
     public int getSquareFeet() {
-        
+
         return sqft;
     }
 
     public boolean hasAC() {
-        
+
         return building.hasAC();
     }
 
     public LocalDateTime getTime2023() {
-       
+
         return time2023;
     }
 
     public LocalDateTime getTime2024() {
-        
+
         return time2024;
     }
 
     public LocalDateTime getTime2025() {
-       
+
         return time2025;
     }
 
@@ -176,7 +174,7 @@ public class Room {
         sb.append("2023: ");
 
         if (time2023 != null) {
-            
+
             sb.append(time2023);
         } else {
 
@@ -214,8 +212,8 @@ public class Room {
 
         String acStatus;
 
-        if(hasAC()) {
-            
+        if (hasAC()) {
+
             acStatus = "AC is available.";
         } else {
 
@@ -223,35 +221,34 @@ public class Room {
         }
 
         return roomName + " | " +
-            building + " | " +
-            occupancy + " ppl | " +
-            sqft + " sqft | " +
-            acStatus;
+                building + " | " +
+                occupancy + " ppl | " +
+                sqft + " sqft | " +
+                acStatus;
     }
+
     public static void main(String args[]) {
 
-    DateTimeFormatter formatter =
-        DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a", Locale.ENGLISH);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a", Locale.ENGLISH);
 
-    Room test = new Room(
-        "Dialynas - DLNS 100 - 101",
-        137,
-        LocalDateTime.parse("Apr 11, 2023 8:15 PM", formatter),
-        LocalDateTime.parse("Apr 9, 2024 6:42 PM", formatter),
-        LocalDateTime.parse("Apr 8, 2025 5:27 PM", formatter),
-        1,
-        true
-    );
+        Room test = new Room(
+                "Dialynas - DLNS 100 - 101",
+                137,
+                LocalDateTime.parse("Apr 11, 2023 8:15 PM", formatter),
+                LocalDateTime.parse("Apr 9, 2024 6:42 PM", formatter),
+                LocalDateTime.parse("Apr 8, 2025 5:27 PM", formatter),
+                1,
+                true);
 
-    System.out.println(test.rawName);
-    System.out.println(test.sqft);
-    System.out.println(test.time2023);
-    System.out.println(test.time2024);
-    System.out.println(test.time2025);
-    System.out.println(test.occupancy);
-    System.out.println(test.roomName);
-    System.out.println(test.suite);
-    System.out.println(test.building);
+        System.out.println(test.rawName);
+        System.out.println(test.sqft);
+        System.out.println(test.time2023);
+        System.out.println(test.time2024);
+        System.out.println(test.time2025);
+        System.out.println(test.occupancy);
+        System.out.println(test.roomName);
+        System.out.println(test.suite);
+        System.out.println(test.building);
 
     }
 }

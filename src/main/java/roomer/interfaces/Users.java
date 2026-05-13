@@ -4,7 +4,7 @@
  * @author Evan Tran, Phu Vo, Ronnie Ho
  *
  */
-package roomer;
+package roomer.interfaces;
 
 import java.util.HashMap;
 

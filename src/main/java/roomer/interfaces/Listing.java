@@ -3,27 +3,23 @@
  *
  * @author Evan Tran, Phu Vo, Ronnie Ho
  */
-package roomer;
+package roomer.interfaces;
 
 import java.time.LocalDateTime;
 
-public class DrawSlot {
+public class Listing {
 
-    private final String id;
     private final String ownerEmail;
     private final LocalDateTime drawTime;
+    private final double price;
 
-    public DrawSlot(String id, String ownerEmail, LocalDateTime drawTime) {
-        this.id = id;
+    public Listing(String ownerEmail, LocalDateTime drawTime, double price) {
         this.ownerEmail = ownerEmail;
         this.drawTime = drawTime;
+        this.price = price;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public String getOwnerEmail() {
+    public String getEmail() {
         return ownerEmail;
     }
 
@@ -31,8 +27,12 @@ public class DrawSlot {
         return drawTime;
     }
 
+    public double getPrice() {
+        return price;
+    }
+
     @Override
     public String toString() {
-        return "Slot[" + id + "] | Owner: " + ownerEmail + " | Draw Time: " + drawTime;
+        return "Owner: " + ownerEmail + " | Draw Time: " + drawTime + " | Price: " + price;
     }
 }

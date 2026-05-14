@@ -179,7 +179,7 @@ public class ListingTreeInterface {
 
             seller = users.get(email);
 
-            if (buyer == null) {
+            if (seller == null) {
                 System.out.println("User not found.");
             } else {
                 if (!tree.containsEmail(email)) {

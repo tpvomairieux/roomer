@@ -11,7 +11,7 @@
 
     header { background: #002D74; border-bottom: 3px solid #f0d060; padding: 24px 40px; }
     header h1 { font-size: 1.9rem; font-weight: 700; color: white; }
-    header p  { font-size: 0.95rem; color: white; margin-top: 4px; }
+    header p  { font-size: 0.95rem; color: white; margin-top: 4px; opacity: 0.85; }
 
     main { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
 
@@ -31,10 +31,10 @@
     .filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 16px; }
     label { font-size: 0.9rem; color: #666; }
 
-    select, input[type="text"] {
+    select, input[type="text"], input[type="number"] {
         display: block; margin-top: 4px; padding: 8px 10px;
         border: 1px solid #ddd; border-radius: 5px;
-        font-size: 0.9rem; font-family: 'Open Sans', sans-serif; width: 190px;
+        font-size: 0.9rem; font-family: 'Open Sans', sans-serif; width: 210px;
         background: #fffdf4;
     }
 
@@ -50,13 +50,15 @@
     td { padding: 9px 12px; border-bottom: 1px solid #f0ebe0; }
     tr:hover td { background: #fffdf4; }
 
-    .inline { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+    .inline { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-top: 8px; }
     .result { margin-top: 12px; padding: 12px; background: #fff8e1; border-radius: 5px; font-size: 0.9rem; min-height: 36px; border: 1px solid #ece8d8; }
 
     .badge-yes { background: #d4edda; color: #155724; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
     .badge-no  { background: #fdecea; color: #7a1c1c; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
     .success { color: #2a7a2a; }
     .error   { color: #c0392b; }
+
+    .demo-hint { font-size: 0.82rem; color: #999; margin-top: 6px; }
     </style>
 </head>
 <body>
@@ -121,8 +123,10 @@
         <div class="card">
             <h2>Search for a Room</h2>
             <div class="inline">
-                <input type="text" id="search-input" placeholder="e.g. Walker-719" />
-                <button onclick="searchRoom()">Search</button>
+                <label>Room Name
+                    <input type="text" id="search-input" placeholder="e.g. Walker-719" />
+                </label>
+                <button style="margin-top:22px" onclick="searchRoom()">Search</button>
             </div>
             <div id="search-result" class="result"></div>
         </div>
@@ -132,34 +136,48 @@
     <div id="exchange" class="section">
         <div class="card">
             <h2>Draw Time Exchange</h2>
+            <p style="color:#888; font-size:0.9rem;">
+                Post your draw time to find a trade partner. Both users must have active listings to execute a swap.
+            </p>
 
-            <h3>Posted Draw Times</h3>
+            <h3>Active Listings</h3>
             <button onclick="loadSlots()">Refresh</button>
-            <table>
-                <thead><tr><th>Slot ID</th><th>Owner</th><th>Draw Time</th></tr></thead>
+            <table style="margin-top:10px">
+                <thead><tr><th>Owner</th><th>Draw Time</th><th>Price</th></tr></thead>
                 <tbody id="slots-body"></tbody>
             </table>
 
             <h3>Post Your Draw Time</h3>
             <div class="inline">
-                <input type="text" id="post-email" placeholder="Your email" />
-                <button onclick="postSlot()">Post</button>
+                <label>Your Email
+                    <input type="text" id="post-email" placeholder="your@pomona.edu" />
+                </label>
+                <button style="margin-top:22px" onclick="postSlot()">Post</button>
             </div>
+            <p class="demo-hint">Demo users: alicia.park@pomona.edu · bryson.young@pomona.edu · carol.rivera@pomona.edu</p>
             <div id="post-result" class="result"></div>
 
             <h3>Check if a Trade is Possible</h3>
             <div class="inline">
-                <input type="text" id="check-emailA" placeholder="Your email" />
-                <input type="text" id="check-emailB" placeholder="Other user's email" />
-                <button onclick="checkTrade()">Check</button>
+                <label>Your Email
+                    <input type="text" id="check-emailA" placeholder="your@pomona.edu" />
+                </label>
+                <label>Their Email
+                    <input type="text" id="check-emailB" placeholder="other@pomona.edu" />
+                </label>
+                <button style="margin-top:22px" onclick="checkTrade()">Check</button>
             </div>
             <div id="check-result" class="result"></div>
 
             <h3>Execute Trade</h3>
             <div class="inline">
-                <input type="text" id="trade-emailA" placeholder="Your email" />
-                <input type="text" id="trade-emailB" placeholder="Other user's email" />
-                <button onclick="executeTrade()">Execute Trade</button>
+                <label>Your Email
+                    <input type="text" id="trade-emailA" placeholder="your@pomona.edu" />
+                </label>
+                <label>Their Email
+                    <input type="text" id="trade-emailB" placeholder="other@pomona.edu" />
+                </label>
+                <button style="margin-top:22px" onclick="executeTrade()">Execute Trade</button>
             </div>
             <div id="trade-result" class="result"></div>
         </div>
@@ -169,7 +187,41 @@
     <div id="marketplace" class="section">
         <div class="card">
             <h2>Marketplace</h2>
-            <p style="color:#888;">Coming soon — marketplace feature in progress.</p>
+            <p style="color:#888; font-size:0.9rem;">
+                Buy or sell draw times at a set price. Listings are sorted by draw time — earlier slots appear first.
+            </p>
+
+            <h3>All Listings</h3>
+            <button onclick="loadSlots()">Refresh</button>
+            <table style="margin-top:10px">
+                <thead><tr><th>Owner</th><th>Draw Time</th><th>Price</th></tr></thead>
+                <tbody id="market-body"></tbody>
+            </table>
+
+            <h3>Post a Listing</h3>
+            <div class="inline">
+                <label>Your Email
+                    <input type="text" id="market-email" placeholder="your@pomona.edu" />
+                </label>
+                <label>Price ($)
+                    <input type="number" id="market-price" placeholder="e.g. 50" min="0" style="width:120px" />
+                </label>
+                <button style="margin-top:22px" onclick="postListing()">Post Listing</button>
+            </div>
+            <p class="demo-hint">Demo users: alicia.park@pomona.edu · bryson.young@pomona.edu · carol.rivera@pomona.edu</p>
+            <div id="market-post-result" class="result"></div>
+
+            <h3>Purchase a Draw Time</h3>
+            <div class="inline">
+                <label>Your Email (Buyer)
+                    <input type="text" id="buy-emailA" placeholder="your@pomona.edu" />
+                </label>
+                <label>Seller Email
+                    <input type="text" id="buy-emailB" placeholder="seller@pomona.edu" />
+                </label>
+                <button style="margin-top:22px" onclick="purchaseListing()">Purchase</button>
+            </div>
+            <div id="buy-result" class="result"></div>
         </div>
     </div>
 </main>
@@ -180,8 +232,9 @@
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById(name).classList.add('active');
         el.classList.add('active');
-        if (name === 'rooms')    loadRooms();
-        if (name === 'exchange') loadSlots();
+        if (name === 'rooms')       loadRooms();
+        if (name === 'exchange')    loadSlots();
+        if (name === 'marketplace') loadMarket();
     }
 
     async function loadRooms() {
@@ -194,7 +247,7 @@
         if (occupancy) url += 'occupancy=' + occupancy + '&';
         if (ac !== '')  url += 'ac=' + ac;
 
-        const res = await fetch(url);
+        const res  = await fetch(url);
         const list = await res.json();
         const tbody = document.getElementById('rooms-body');
         tbody.innerHTML = '';
@@ -203,10 +256,13 @@
                 <td>${r.roomName}</td>
                 <td>${r.building}</td>
                 <td>${r.occupancy}</td>
-                <td>${r.sqft}</td>
+                <td>${r.sqft} sq ft</td>
                 <td><span class="${r.hasAC ? 'badge-yes' : 'badge-no'}">${r.hasAC ? 'Yes' : 'No'}</span></td>
             </tr>`;
         });
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="color:#888">No rooms match your filters.</td></tr>';
+        }
     }
 
     async function searchRoom() {
@@ -226,18 +282,36 @@
     }
 
     async function loadSlots() {
-        const res   = await fetch('/exchange/slots');
-        const slots = await res.json();
-        const tbody = document.getElementById('slots-body');
+        const res     = await fetch('/exchange/slots');
+        const listings = await res.json();
+        const tbody   = document.getElementById('slots-body');
         tbody.innerHTML = '';
-        if (slots.length === 0) {
+        if (listings.length === 0) {
             tbody.innerHTML = '<tr><td colspan="3" style="color:#888">No draw times posted yet.</td></tr>';
         } else {
-            slots.forEach(s => {
+            listings.forEach(l => {
                 tbody.innerHTML += `<tr>
-                    <td>${s.id}</td>
-                    <td>${s.ownerEmail}</td>
-                    <td>${s.drawTime}</td>
+                    <td>${l.ownerEmail}</td>
+                    <td>${l.drawTime}</td>
+                    <td>${l.price === 0 ? '<span style="color:#888">Trade only</span>' : '$' + l.price.toFixed(2)}</td>
+                </tr>`;
+            });
+        }
+    }
+
+    async function loadMarket() {
+        const res      = await fetch('/exchange/slots');
+        const listings = await res.json();
+        const tbody    = document.getElementById('market-body');
+        tbody.innerHTML = '';
+        if (listings.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#888">No listings available yet.</td></tr>';
+        } else {
+            listings.forEach(l => {
+                tbody.innerHTML += `<tr>
+                    <td>${l.ownerEmail}</td>
+                    <td>${l.drawTime}</td>
+                    <td>${l.price === 0 ? '<span style="color:#888">Trade only</span>' : '$' + l.price.toFixed(2)}</td>
                 </tr>`;
             });
         }
@@ -245,12 +319,26 @@
 
     async function postSlot() {
         const email = document.getElementById('post-email').value.trim();
-        const res   = await fetch('/exchange/post?email=' + encodeURIComponent(email));
+        const res   = await fetch('/exchange/post?email=' + encodeURIComponent(email) + '&price=0');
         const div   = document.getElementById('post-result');
         if (res.ok) {
-            const slot = await res.json();
-            div.innerHTML = '<span class="success">Posted! Slot ID: ' + slot.id + '</span>';
+            div.innerHTML = '<span class="success">Draw time posted for exchange!</span>';
             loadSlots();
+        } else {
+            const err = await res.json();
+            div.innerHTML = '<span class="error">Error: ' + err.error + '</span>';
+        }
+    }
+
+    async function postListing() {
+        const email = document.getElementById('market-email').value.trim();
+        const price = document.getElementById('market-price').value.trim();
+        const div   = document.getElementById('market-post-result');
+        if (!price) { div.innerHTML = '<span class="error">Please enter a price.</span>'; return; }
+        const res = await fetch('/exchange/post?email=' + encodeURIComponent(email) + '&price=' + encodeURIComponent(price));
+        if (res.ok) {
+            div.innerHTML = '<span class="success">Listing posted!</span>';
+            loadMarket();
         } else {
             const err = await res.json();
             div.innerHTML = '<span class="error">Error: ' + err.error + '</span>';
@@ -264,8 +352,8 @@
         const data = await res.json();
         const div  = document.getElementById('check-result');
         div.innerHTML = data.canTrade
-            ? '<span class="success">Trade is valid! Both users have posted their draw times.</span>'
-            : '<span class="error">Trade not possible. One or both users have not posted a draw time.</span>';
+            ? '<span class="success">Trade is valid — both users have active listings.</span>'
+            : '<span class="error">Trade not possible — one or both users have not posted a draw time.</span>';
     }
 
     async function executeTrade() {
@@ -275,14 +363,28 @@
         const data = await res.json();
         const div  = document.getElementById('trade-result');
         if (data.success) {
-            div.innerHTML = '<span class="success">Trade complete! Draw times have been swapped.</span>';
+            div.innerHTML = '<span class="success">Trade complete — draw times have been swapped!</span>';
             loadSlots();
         } else {
             div.innerHTML = '<span class="error">Trade failed: ' + (data.error || 'Unknown error') + '</span>';
         }
     }
 
-    // Load rooms immediately when page opens
+    async function purchaseListing() {
+        const buyer  = document.getElementById('buy-emailA').value.trim();
+        const seller = document.getElementById('buy-emailB').value.trim();
+        const res    = await fetch('/exchange/purchase?buyer=' + encodeURIComponent(buyer) + '&seller=' + encodeURIComponent(seller));
+        const data   = await res.json();
+        const div    = document.getElementById('buy-result');
+        if (data.success) {
+            div.innerHTML = '<span class="success">Purchase complete — draw time acquired!</span>';
+            loadMarket();
+        } else {
+            div.innerHTML = '<span class="error">Purchase failed: ' + (data.error || 'Unknown error') + '</span>';
+        }
+    }
+
+    // Load rooms on page open
     loadRooms();
 </script>
 

@@ -3,6 +3,7 @@
  * and serves the frontend at http://localhost:8080.
  *
  * Run this class, then open http://localhost:8080 in your browser.
+ * GUI development assisted by Claude (Anthropic) — see course LLM policy.
  *
  * @author Evan Tran, Phu Vo, Ronnie Ho
  */
@@ -11,6 +12,13 @@ package roomer;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+
+import roomer.interfaces.Building;
+import roomer.interfaces.Listing;
+import roomer.interfaces.Room;
+import roomer.interfaces.Rooms;
+import roomer.interfaces.User;
+import roomer.interfaces.Users;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,26 +45,22 @@ public class RoomerServer {
         DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a", Locale.ENGLISH);
 
     public static void main(String[] args) throws IOException {
-        // Load all room data from the Excel file
         rooms = RoomDataLoader.load("CS62 Final Project Data.xlsx");
         users = new Users();
         exchange = new DrawExchange();
         seedUsers();
 
-        // Start the HTTP server on port 8080
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
-        // Register more specific paths first so they take priority over "/"
-        server.createContext("/rooms/filter", new FilterHandler());
-        server.createContext("/rooms/search", new SearchHandler());
-        server.createContext("/rooms",         new AllRoomsHandler());
-        server.createContext("/exchange/slots", new SlotsHandler());
-        server.createContext("/exchange/post",  new PostSlotHandler());
-        server.createContext("/exchange/check", new CheckTradeHandler());
-        server.createContext("/exchange/trade", new TradeHandler());
-
-        // "/" catches everything else and serves the frontend
-        server.createContext("/", new FrontendHandler());
+        server.createContext("/rooms/filter",     new FilterHandler());
+        server.createContext("/rooms/search",     new SearchHandler());
+        server.createContext("/rooms",            new AllRoomsHandler());
+        server.createContext("/exchange/slots",   new SlotsHandler());
+        server.createContext("/exchange/post",    new PostSlotHandler());
+        server.createContext("/exchange/check",   new CheckTradeHandler());
+        server.createContext("/exchange/trade",   new TradeHandler());
+        server.createContext("/exchange/purchase", new PurchaseHandler());
+        server.createContext("/",                 new FrontendHandler());
 
         server.start();
         System.out.println("Roomer running at http://localhost:8080");
@@ -64,11 +68,11 @@ public class RoomerServer {
 
     /** Seeds demo users for testing the exchange feature. */
     private static void seedUsers() {
-        users.add(new User("alicia.park@pomona.edu", "aliciapark", "pass",
+        users.add(new User("alicia.park@pomona.edu", "pass",
             LocalDateTime.parse("Apr 8, 2025 5:03 PM", FORMATTER)));
-        users.add(new User("bryson.young@pomona.edu", "brysonyoung", "pass",
+        users.add(new User("bryson.young@pomona.edu", "pass",
             LocalDateTime.parse("Apr 8, 2025 6:42 PM", FORMATTER)));
-        users.add(new User("carol.rivera@pomona.edu", "carolrivera", "pass",
+        users.add(new User("carol.rivera@pomona.edu", "pass",
             LocalDateTime.parse("Apr 9, 2025 7:06 PM", FORMATTER)));
     }
 
@@ -114,19 +118,22 @@ public class RoomerServer {
              + ",\"hasAC\":"      + r.hasAC() + "}";
     }
 
-    /** Converts a DrawSlot to a JSON string. */
-    private static String slotJson(DrawSlot s) {
-        return "{\"id\":\""         + s.getId() + "\""
-             + ",\"ownerEmail\":\"" + s.getOwnerEmail() + "\""
-             + ",\"drawTime\":\""   + s.getDrawTime() + "\"}";
+    /** Converts a Listing to a JSON string. */
+    private static String listingJson(Listing l) {
+        return "{\"ownerEmail\":\"" + l.getEmail() + "\""
+             + ",\"drawTime\":\""   + l.getDrawTime() + "\""
+             + ",\"price\":"        + l.getPrice() + "}";
     }
 
-    /** Converts a list of Rooms to a JSON array. */
+    /** Converts a list of Rooms to a JSON array, skipping invalid entries. */
     private static String roomListJson(List<Room> list) {
         StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < list.size(); i++) {
-            sb.append(roomJson(list.get(i)));
-            if (i < list.size() - 1) sb.append(",");
+        boolean first = true;
+        for (Room r : list) {
+            if (r.getOccupancy() == 0) continue;
+            if (!first) sb.append(",");
+            sb.append(roomJson(r));
+            first = false;
         }
         return sb.append("]").toString();
     }
@@ -180,20 +187,20 @@ public class RoomerServer {
         }
     }
 
-    // GET /exchange/slots — all currently posted draw slots
+    // GET /exchange/slots — all active listings sorted by draw time
     static class SlotsHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
-            List<DrawSlot> slots = exchange.getAllSlots();
+            List<Listing> listings = exchange.getAllListings();
             StringBuilder sb = new StringBuilder("[");
-            for (int i = 0; i < slots.size(); i++) {
-                sb.append(slotJson(slots.get(i)));
-                if (i < slots.size() - 1) sb.append(",");
+            for (int i = 0; i < listings.size(); i++) {
+                sb.append(listingJson(listings.get(i)));
+                if (i < listings.size() - 1) sb.append(",");
             }
             json(ex, 200, sb.append("]").toString());
         }
     }
 
-    // GET /exchange/post?email=X — posts a user's draw time
+    // GET /exchange/post?email=X&price=Y — posts a user's draw time
     static class PostSlotHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             Map<String, String> p = query(ex.getRequestURI());
@@ -201,13 +208,15 @@ public class RoomerServer {
             if (email == null) { json(ex, 400, "{\"error\":\"Missing email\"}"); return; }
             User user = users.get(email);
             if (user == null) { json(ex, 404, "{\"error\":\"User not found\"}"); return; }
-            DrawSlot slot = exchange.postSlot(user);
-            if (slot == null) json(ex, 400, "{\"error\":\"Could not post slot\"}");
-            else              json(ex, 200, slotJson(slot));
+            double price = 0.0;
+            try { if (p.containsKey("price")) price = Double.parseDouble(p.get("price")); } catch (Exception ignored) {}
+            Listing listing = exchange.post(user, price);
+            if (listing == null) json(ex, 400, "{\"error\":\"User already has an active listing\"}");
+            else                 json(ex, 200, listingJson(listing));
         }
     }
 
-    // GET /exchange/check?emailA=X&emailB=Y — checks if trade is valid
+    // GET /exchange/check?emailA=X&emailB=Y — checks if a trade is possible
     static class CheckTradeHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             Map<String, String> p = query(ex.getRequestURI());
@@ -217,7 +226,7 @@ public class RoomerServer {
         }
     }
 
-    // GET /exchange/trade?emailA=X&emailB=Y — executes the trade
+    // GET /exchange/trade?emailA=X&emailB=Y — swaps draw times between two users
     static class TradeHandler implements HttpHandler {
         public void handle(HttpExchange ex) throws IOException {
             Map<String, String> p = query(ex.getRequestURI());
@@ -226,6 +235,18 @@ public class RoomerServer {
             boolean ok = exchange.executeTrade(a, b, users);
             if (ok) json(ex, 200, "{\"success\":true}");
             else    json(ex, 400, "{\"success\":false,\"error\":\"Trade failed\"}");
+        }
+    }
+
+    // GET /exchange/purchase?buyer=X&seller=Y — buys a draw time from the marketplace
+    static class PurchaseHandler implements HttpHandler {
+        public void handle(HttpExchange ex) throws IOException {
+            Map<String, String> p = query(ex.getRequestURI());
+            String buyer = p.get("buyer"), seller = p.get("seller");
+            if (buyer == null || seller == null) { json(ex, 400, "{\"error\":\"Missing emails\"}"); return; }
+            boolean ok = exchange.purchase(buyer, seller, users);
+            if (ok) json(ex, 200, "{\"success\":true}");
+            else    json(ex, 400, "{\"success\":false,\"error\":\"Purchase failed — insufficient balance or listing not found\"}");
         }
     }
 }

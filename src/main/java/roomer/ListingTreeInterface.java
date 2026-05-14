@@ -54,7 +54,7 @@ public class ListingTreeInterface {
                     active = false;
                     break;
                 default:
-                    System.out.println("Invalid choice. Enter a number 1-5.");
+                    System.out.println("Invalid choice. Enter a number 1-4.");
             }
         }
 

@@ -3,7 +3,7 @@
  * and serves the frontend at http://localhost:8080.
  *
  * Run this class, then open http://localhost:8080 in your browser.
- * GUI development assisted by Claude (Anthropic) — see course LLM policy.
+ * Partial GUI development and how to begin assisted by Claude (Anthropic) — https://docs.google.com/document/d/1xO8G-wDYyG3O8ky7rNf1Dl36KFB-wT5pKrTR4zNOf2w/edit?tab=t.0
  *
  * @author Evan Tran, Phu Vo, Ronnie Ho
  */

@@ -1,6 +1,6 @@
 /**
- * Manages both the draw-time exchange (Feature 2) and marketplace (Feature 3)
- * using a ListingTree (BST sorted by draw time) as the backing data structure.
+ * Handles posting, trading, and purchasing draw times.
+ * Uses ListingTree to keep listings sorted by draw time.
  *
  * @author Evan Tran, Phu Vo, Ronnie Ho
  */
@@ -54,7 +54,7 @@ public class DrawExchange {
         User userB = users.get(emailB);
         if (userA == null || userB == null) return false;
 
-        // Swap draw times
+        // swap their times using a temp variable
         LocalDateTime temp = userA.getDrawTime();
         userA.setTime(userB.getDrawTime());
         userB.setTime(temp);

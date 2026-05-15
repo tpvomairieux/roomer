@@ -199,7 +199,7 @@ public class ListingTreeInterface {
         }
     }
 
-    private static void purchaseListing(Scanner scanner, Users users, ListingTree tree) { // Ability to cancel?
+    private static void purchaseListing(Scanner scanner, Users users, ListingTree tree) {
         User buyer = new User();
         User seller = new User();
         Listing sellerListing;

@@ -12,7 +12,6 @@ import java.util.Locale;
 import java.util.Scanner;
 
 import roomer.interfaces.Listing;
-import roomer.interfaces.Price;
 import roomer.interfaces.User;
 import roomer.interfaces.Users;
 
@@ -37,8 +36,7 @@ public class ListingTreeInterface {
             System.out.println("1. Create a listing");
             System.out.println("2. View all posted listings");
             System.out.println("3. Purchase a listing");
-            System.out.println("4. Exchange times");
-            System.out.println("5. Exit");
+            System.out.println("4. Exit");
 
             String choice = scanner.nextLine();
 
@@ -50,16 +48,13 @@ public class ListingTreeInterface {
                     viewSlots(tree);
                     break;
                 case "3":
-                    purchase(scanner, users, tree);
+                    purchaseListing(scanner, users, tree);
                     break;
                 case "4":
-                    executeTrade(scanner, users, tree);
-                    break;
-                case "5":
                     active = false;
                     break;
                 default:
-                    System.out.println("Invalid choice. Enter a number 1-5.");
+                    System.out.println("Invalid choice. Enter a number 1-4.");
             }
         }
 
@@ -77,59 +72,46 @@ public class ListingTreeInterface {
                 LocalDateTime.parse("Apr 9, 2025 7:06 PM", FORMATTER)));
     }
 
-    // Can implement login system if we build website GUI
-
-    // This method serves as the frontend for getting user information for listing,
-    // and passing it to drawexchange.java
-
-    private static void postSlot(Scanner scanner, Users users, ListingTree tree) { // Testing please
+    private static void postSlot(Scanner scanner, Users users, ListingTree tree) {
         User user = new User();
+        double binPrice;
 
         while (true) { // Checks if user is in system and therefore eligible to make a listing
-            System.out.print("Enter your email: ");
+            System.out.println("Enter your Pomona email: ");
             String email = scanner.nextLine();
 
-            user = users.get(email);
-
-            if (user == null) {
-                System.out.println("User not found.");
+            if (email.endsWith("@mymail.pomona.edu") || email.endsWith("@pomona.edu")) {
+                user = users.get(email);
+                if (user == null) {
+                    System.out.println("Warning: User not found.");
+                    return;
+                } else {
+                    break;
+                }
             } else {
-                break;
+                System.out.println("Warning: not a valid Pomona email.");
             }
         }
 
-        Price priceInfo = new Price();
+        while (true) { // Checks if user password is correct
+            System.out.println("Enter your password: ");
+            String password = scanner.nextLine();
+            if (user.getPassword().equals(password)) {
+                break;
+            } else {
+                System.out.println("Warning: incorrect password.");
+            }
+        }
 
         while (true) { // Checks if user's listing is valid
-            System.out.println("How would you like to list your time?");
-            System.out.println("1. Auction");
-            System.out.println("2. Buy-It-Now");
-            System.out.println("3. Cancel");
+            System.out.println("Would you like to list your time?");
+            System.out.println("1. Confirm");
+            System.out.println("2. Cancel");
 
             String choice = scanner.nextLine();
 
             switch (choice) {
                 case "1":
-                    double minBid;
-                    while (true) {
-                        System.out.println("What should the minimum bid be?");
-                        try {
-                            minBid = Double.parseDouble(scanner.nextLine());
-                            if (minBid <= 0) {
-                                System.out.println("Warning: minimum bid must be greater than 0.");
-                                continue;
-                            }
-                            break;
-                        } catch (NumberFormatException e) {
-                            System.out.println("Warning: Please enter a valid number.");
-                        }
-                    }
-                    priceInfo.setAuction(true);
-                    priceInfo.setSeller(minBid);
-                    break;
-
-                case "2":
-                    double binPrice;
                     while (true) {
                         System.out.println("What should the BIN price be?");
                         try {
@@ -143,11 +125,9 @@ public class ListingTreeInterface {
                             System.out.println("Warning: Please enter a valid number.");
                         }
                     }
-                    priceInfo.setAuction(false);
-                    priceInfo.setSeller(binPrice);
                     break;
 
-                case "3":
+                case "2":
                     System.out.println("Cancelling listing.");
                     return;
 
@@ -159,7 +139,7 @@ public class ListingTreeInterface {
         }
 
         try {
-            tree.add(new Listing(user.getEmail(), user.getDrawTime(), priceInfo));
+            tree.add(new Listing(user.getEmail(), user.getDrawTime(), binPrice));
         } catch (NullPointerException e) {
             System.out.println("Could not post: " + e);
 
@@ -170,10 +150,56 @@ public class ListingTreeInterface {
         System.out.println("New listing posted");
     }
 
-    // private static void removeSlot() for later
+    private static void removeSlot(Scanner scanner, Users users, ListingTree tree) {
+        User user = new User();
+        while (true) { // Checks if user is in system and therefore eligible to make a listing
+            System.out.println("Enter your Pomona email: ");
+            String email = scanner.nextLine();
 
-    // This method serves as the frontend for getting the listings
-    // Maybe add sorting here?
+            if (email.endsWith("@mymail.pomona.edu") || email.endsWith("@pomona.edu")) {
+                user = users.get(email);
+                if (user == null) {
+                    System.out.println("Warning: User not found.");
+                    return;
+                } else {
+                    break;
+                }
+            } else {
+                System.out.println("Warning: not a valid Pomona email.");
+            }
+        }
+
+        while (true) { // Checks if user password is correct
+            System.out.println("Enter your password: ");
+            String password = scanner.nextLine();
+            if (user.getPassword().equals(password)) {
+                break;
+            } else {
+                System.out.println("Warning: incorrect password.");
+            }
+        }
+
+        while (true) { // Checks if user wants to remove listing
+            System.out.println("Would you like to remove your time?");
+            System.out.println("1. Confirm");
+            System.out.println("2. Cancel");
+
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    tree.remove(user.getEmail());
+                    return;
+
+                case "2":
+                    System.out.println("Cancelling removal.");
+                    return;
+
+                default:
+                    System.out.println("Invalid selection. Please try again!");
+            }
+        }
+    }
 
     private static void viewSlots(ListingTree tree) {
         System.out.println("All Listings: "); // Sorted from earliest draw to latest
@@ -183,14 +209,11 @@ public class ListingTreeInterface {
         }
     }
 
-    // Method works, ok user design. Buyers should not have to create listings to
-    // exchange
-
     private static void purchaseListing(Scanner scanner, Users users, ListingTree tree) { // Ability to cancel?
         User buyer = new User();
         User seller = new User();
         Listing sellerListing;
-        Price listingInfo;
+        double binPrice;
 
         while (true) { // Checks if user is in system and therefore eligible to buy a listing
             System.out.print("Enter your email: ");
@@ -205,69 +228,49 @@ public class ListingTreeInterface {
             }
         }
 
-        while (true) { // A little clunky, taking suggestions
+        while (true) {
             System.out.print("Enter seller's email: ");
             String email = scanner.nextLine();
 
             seller = users.get(email);
 
-            if (buyer == null) {
+            if (seller == null) {
                 System.out.println("User not found.");
             } else {
                 if (!tree.containsEmail(email)) {
                     System.out.println("Seller's listing not found.");
                 } else {
                     sellerListing = tree.find(email);
-                    listingInfo = sellerListing.getPriceInfo();
+                    binPrice = sellerListing.getPrice();
                     break;
                 }
             }
         }
 
-        if (listingInfo.isAuction()) { // Check if user has enough money
-            double minBid = listingInfo.getBuyerPrice() + 1;
-            while (true) {
-                System.out.println(
-                        "To be eligible for " + sellerListing.getEmail()
-                                + "'s time, you would need to submit a bid of at least "
-                                + minBid + ". Please enter your bid:");
+        while (true) {
+            System.out.println("Purchase " + sellerListing.getEmail() + "'s time for " + binPrice + "?");
+            System.out.println("1. Yes");
+            System.out.println("2. No");
 
-                double bid = Double.parseDouble(scanner.nextLine()); // Try Except
+            String choice = scanner.nextLine();
 
-                if (!checkBalance(buyer, bid)) {
-                    System.out.println(
-                            "Warning: User does not have enough money in account balance. Please add more and try again");
-                    return;
-                }
-
-                if (bid < minBid) {
-                    System.out.println("Warning: Bid is not large enough.");
-                } else {
-                    System.out.println("Bid of " + bid + " successfully submitted!");
-                    break;
-                }
-            }
-
-        } else {
-            double minBid = listingInfo.getSellerPrice();
-            while (true) {
-                System.out.println(
-                        "Purchase " + sellerListing.getEmail()
-                                + "'s time for " + minBid + "?");
-                System.out.println("1. Yes");
-                System.out.println("2. No");
-                int buy = Integer.parseInt(scanner.nextLine());
-                if (!checkBalance(buyer, minBid)) {
-                    System.out.println(
-                            "Warning: User does not have enough money in account balance. Please add more and try again");
-                    return;
-                }
-                if (buy == 1) {
-                    executePurchase(buyer, seller, minBid, tree);
+            switch (choice) {
+                case "1":
+                    if (!checkBalance(buyer, binPrice)) {
+                        System.out.println(
+                                "Warning: User does not have enough money in account balance. Please add more and try again");
+                        return;
+                    }
+                    executePurchase(buyer, seller, binPrice, tree);
                     System.out.println("Purchase successfully submitted!");
                     break;
-                }
-                return;
+
+                case "2":
+                    System.out.println("Cancelling removal.");
+                    return;
+
+                default:
+                    System.out.println("Invalid selection. Please try again!");
             }
         }
     }

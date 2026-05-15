@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Roomer — Pomona Housing</title>
+    <style>
+        /* Partial stylistic features assisted by Claude (Anthropic) — https://docs.google.com/document/d/1xO8G-wDYyG3O8ky7rNf1Dl36KFB-wT5pKrTR4zNOf2w/edit?tab=t.0 */
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Open Sans', sans-serif; background: #fffdf4; color: #2c2c2c; }
+
+    header { background: #002D74; border-bottom: 3px solid #f0d060; padding: 24px 40px; }
+    header h1 { font-size: 1.9rem; font-weight: 700; color: white; }
+    header p  { font-size: 0.95rem; color: white; margin-top: 4px; opacity: 0.85; }
+
+    main { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+    .tab  { padding: 10px 22px; cursor: pointer; background: white; border: 1px solid #e8e0c8; border-radius: 6px; font-size: 0.95rem; font-family: 'Open Sans', sans-serif; }
+    .tab:hover  { background: #fff8e1; }
+    .tab.active { background: #f0d060; color: #2c2c2c; border-color: #f0d060; font-weight: 600; }
+
+    .section        { display: none; }
+    .section.active { display: block; }
+
+    .card { background: white; border-radius: 8px; padding: 24px; margin-bottom: 20px; border: 1px solid #ece8d8; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+
+    h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #2c2c2c; }
+    h3 { font-size: 1.05rem; font-weight: 600; margin: 20px 0 10px; color: #555; }
+
+    .filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 16px; }
+    label { font-size: 0.9rem; color: #666; }
+
+    select, input[type="text"], input[type="number"] {
+        display: block; margin-top: 4px; padding: 8px 10px;
+        border: 1px solid #ddd; border-radius: 5px;
+        font-size: 0.9rem; font-family: 'Open Sans', sans-serif; width: 210px;
+        background: #fffdf4;
+    }
+
+    button {
+        padding: 8px 18px; background: #f0d060; color: #2c2c2c;
+        border: none; border-radius: 5px; cursor: pointer;
+        font-size: 0.9rem; font-family: 'Open Sans', sans-serif; font-weight: 600;
+    }
+    button:hover { background: #e8c840; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 8px; }
+    th { background: #fff8e1; padding: 10px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #ece8d8; }
+    td { padding: 9px 12px; border-bottom: 1px solid #f0ebe0; }
+    tr:hover td { background: #fffdf4; }
+
+    .inline { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-top: 8px; }
+    .result { margin-top: 12px; padding: 12px; background: #fff8e1; border-radius: 5px; font-size: 0.9rem; min-height: 36px; border: 1px solid #ece8d8; }
+
+    .badge-yes { background: #d4edda; color: #155724; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
+    .badge-no  { background: #fdecea; color: #7a1c1c; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
+    .success { color: #2a7a2a; }
+    .error   { color: #c0392b; }
+
+    .demo-hint { font-size: 0.82rem; color: #999; margin-top: 6px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Roomer</h1>
+    <p>Pomona College Housing Platform</p>
+</header>
+
+<main>
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('rooms', this)">Browse Rooms</div>
+        <div class="tab"        onclick="showTab('search', this)">Search</div>
+        <div class="tab"        onclick="showTab('exchange', this)">Draw Exchange</div>
+        <div class="tab"        onclick="showTab('marketplace', this)">Marketplace</div>
+    </div>
+
+    <!-- BROWSE ROOMS -->
+    <div id="rooms" class="section active">
+        <div class="card">
+            <h2>Browse Rooms</h2>
+            <div class="filters">
+                <label>Building
+                    <select id="building-filter">
+                        <option value="">Any</option>
+                        <option>Lyon</option><option>Blaisdell</option><option>Mudd</option>
+                        <option>Wig</option><option>Gibson</option><option>Harwood</option>
+                        <option>Oldenborg</option><option>Smiley</option><option>ClarkI</option>
+                        <option>ClarkIII</option><option>ClarkV</option><option>Lawry</option>
+                        <option>Norton</option><option>Dialynas</option><option>Sontag</option>
+                        <option>Walker</option>
+                    </select>
+                </label>
+                <label>Occupancy
+                    <select id="occupancy-filter">
+                        <option value="">Any</option>
+                        <option value="1">Single</option>
+                        <option value="2">Double</option>
+                        <option value="3">Triple</option>
+                    </select>
+                </label>
+                <label>AC
+                    <select id="ac-filter">
+                        <option value="">Any</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                </label>
+                <button onclick="loadRooms()">Filter</button>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Room</th><th>Building</th><th>Occupancy</th><th>Sq Ft</th><th>AC</th></tr>
+                </thead>
+                <tbody id="rooms-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div id="search" class="section">
+        <div class="card">
+            <h2>Search for a Room</h2>
+            <div class="inline">
+                <label>Room Name
+                    <input type="text" id="search-input" placeholder="e.g. Walker-719" />
+                </label>
+                <button style="margin-top:22px" onclick="searchRoom()">Search</button>
+            </div>
+            <div id="search-result" class="result"></div>
+        </div>
+    </div>
+
+    <!-- DRAW EXCHANGE -->
+    <div id="exchange" class="section">
+        <div class="card">
+            <h2>Draw Time Exchange</h2>
+            <p style="color:#888; font-size:0.9rem;">
+                Post your draw time to find a trade partner. Both users must have active listings to execute a swap.
+            </p>
+
+            <h3>Active Listings</h3>
+            <button onclick="loadSlots()">Refresh</button>
+            <table style="margin-top:10px">
+                <thead><tr><th>Owner</th><th>Draw Time</th><th>Price</th></tr></thead>
+                <tbody id="slots-body"></tbody>
+            </table>
+
+            <h3>Post Your Draw Time</h3>
+            <div class="inline">
+                <label>Your Email
+                    <input type="text" id="post-email" placeholder="your@pomona.edu" />
+                </label>
+                <button style="margin-top:22px" onclick="postSlot()">Post</button>
+            </div>
+            <p class="demo-hint">Demo users: alicia.park@pomona.edu · bryson.young@pomona.edu · carol.rivera@pomona.edu</p>
+            <div id="post-result" class="result"></div>
+
+            <h3>Check if a Trade is Possible</h3>
+            <div class="inline">
+                <label>Your Email
+                    <input type="text" id="check-emailA" placeholder="your@pomona.edu" />
+                </label>
+                <label>Their Email
+                    <input type="text" id="check-emailB" placeholder="other@pomona.edu" />
+                </label>
+                <button style="margin-top:22px" onclick="checkTrade()">Check</button>
+            </div>
+            <div id="check-result" class="result"></div>
+
+            <h3>Execute Trade</h3>
+            <div class="inline">
+                <label>Your Email
+                    <input type="text" id="trade-emailA" placeholder="your@pomona.edu" />
+                </label>
+                <label>Their Email
+                    <input type="text" id="trade-emailB" placeholder="other@pomona.edu" />
+                </label>
+                <button style="margin-top:22px" onclick="executeTrade()">Execute Trade</button>
+            </div>
+            <div id="trade-result" class="result"></div>
+        </div>
+    </div>
+
+    <!-- MARKETPLACE -->
+    <div id="marketplace" class="section">
+        <div class="card">
+            <h2>Marketplace</h2>
+            <p style="color:#888; font-size:0.9rem;">
+                Buy or sell draw times at a set price. Listings are sorted by draw time — earlier slots appear first.
+            </p>
+
+            <h3>All Listings</h3>
+            <button onclick="loadSlots()">Refresh</button>
+            <table style="margin-top:10px">
+                <thead><tr><th>Owner</th><th>Draw Time</th><th>Price</th></tr></thead>
+                <tbody id="market-body"></tbody>
+            </table>
+
+            <h3>Post a Listing</h3>
+            <div class="inline">
+                <label>Your Email
+                    <input type="text" id="market-email" placeholder="your@pomona.edu" />
+                </label>
+                <label>Price ($)
+                    <input type="number" id="market-price" placeholder="e.g. 50" min="0" style="width:120px" />
+                </label>
+                <button style="margin-top:22px" onclick="postListing()">Post Listing</button>
+            </div>
+            <p class="demo-hint">Demo users: alicia.park@pomona.edu · bryson.young@pomona.edu · carol.rivera@pomona.edu</p>
+            <div id="market-post-result" class="result"></div>
+
+            <h3>Purchase a Draw Time</h3>
+            <div class="inline">
+                <label>Your Email (Buyer)
+                    <input type="text" id="buy-emailA" placeholder="your@pomona.edu" />
+                </label>
+                <label>Seller Email
+                    <input type="text" id="buy-emailB" placeholder="seller@pomona.edu" />
+                </label>
+                <button style="margin-top:22px" onclick="purchaseListing()">Purchase</button>
+            </div>
+            <div id="buy-result" class="result"></div>
+        </div>
+    </div>
+</main>
+
+<script>
+    function showTab(name, el) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(name).classList.add('active');
+        el.classList.add('active');
+        if (name === 'rooms')       loadRooms();
+        if (name === 'exchange')    loadSlots();
+        if (name === 'marketplace') loadMarket();
+    }
+
+    async function loadRooms() {
+        const building  = document.getElementById('building-filter').value;
+        const occupancy = document.getElementById('occupancy-filter').value;
+        const ac        = document.getElementById('ac-filter').value;
+
+        let url = '/rooms/filter?';
+        if (building)  url += 'building='  + building  + '&';
+        if (occupancy) url += 'occupancy=' + occupancy + '&';
+        if (ac !== '')  url += 'ac=' + ac;
+
+        const res  = await fetch(url);
+        const list = await res.json();
+        const tbody = document.getElementById('rooms-body');
+        tbody.innerHTML = '';
+        list.forEach(r => {
+            tbody.innerHTML += `<tr>
+                <td>${r.roomName}</td>
+                <td>${r.building}</td>
+                <td>${r.occupancy}</td>
+                <td>${r.sqft} sq ft</td>
+                <td><span class="${r.hasAC ? 'badge-yes' : 'badge-no'}">${r.hasAC ? 'Yes' : 'No'}</span></td>
+            </tr>`;
+        });
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="color:#888">No rooms match your filters.</td></tr>';
+        }
+    }
+
+    async function searchRoom() {
+        const name = document.getElementById('search-input').value.trim();
+        const res  = await fetch('/rooms/search?name=' + encodeURIComponent(name));
+        const div  = document.getElementById('search-result');
+        if (res.ok) {
+            const r = await res.json();
+            div.innerHTML = `<strong>${r.roomName}</strong><br>
+                Building: ${r.building} &nbsp;|&nbsp;
+                Occupancy: ${r.occupancy} &nbsp;|&nbsp;
+                ${r.sqft} sq ft &nbsp;|&nbsp;
+                AC: ${r.hasAC ? 'Yes' : 'No'}`;
+        } else {
+            div.innerHTML = '<span class="error">Room not found.</span>';
+        }
+    }
+
+    async function loadSlots() {
+        const res     = await fetch('/exchange/slots');
+        const listings = await res.json();
+        const tbody   = document.getElementById('slots-body');
+        tbody.innerHTML = '';
+        if (listings.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#888">No draw times posted yet.</td></tr>';
+        } else {
+            listings.forEach(l => {
+                tbody.innerHTML += `<tr>
+                    <td>${l.ownerEmail}</td>
+                    <td>${l.drawTime}</td>
+                    <td>${l.price === 0 ? '<span style="color:#888">Trade only</span>' : '$' + l.price.toFixed(2)}</td>
+                </tr>`;
+            });
+        }
+    }
+
+    async function loadMarket() {
+        const res      = await fetch('/exchange/slots');
+        const listings = await res.json();
+        const tbody    = document.getElementById('market-body');
+        tbody.innerHTML = '';
+        if (listings.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#888">No listings available yet.</td></tr>';
+        } else {
+            listings.forEach(l => {
+                tbody.innerHTML += `<tr>
+                    <td>${l.ownerEmail}</td>
+                    <td>${l.drawTime}</td>
+                    <td>${l.price === 0 ? '<span style="color:#888">Trade only</span>' : '$' + l.price.toFixed(2)}</td>
+                </tr>`;
+            });
+        }
+    }
+
+    async function postSlot() {
+        const email = document.getElementById('post-email').value.trim();
+        const res   = await fetch('/exchange/post?email=' + encodeURIComponent(email) + '&price=0');
+        const div   = document.getElementById('post-result');
+        if (res.ok) {
+            div.innerHTML = '<span class="success">Draw time posted for exchange!</span>';
+            loadSlots();
+        } else {
+            const err = await res.json();
+            div.innerHTML = '<span class="error">Error: ' + err.error + '</span>';
+        }
+    }
+
+    async function postListing() {
+        const email = document.getElementById('market-email').value.trim();
+        const price = document.getElementById('market-price').value.trim();
+        const div   = document.getElementById('market-post-result');
+        if (!price) { div.innerHTML = '<span class="error">Please enter a price.</span>'; return; }
+        const res = await fetch('/exchange/post?email=' + encodeURIComponent(email) + '&price=' + encodeURIComponent(price));
+        if (res.ok) {
+            div.innerHTML = '<span class="success">Listing posted!</span>';
+            loadMarket();
+        } else {
+            const err = await res.json();
+            div.innerHTML = '<span class="error">Error: ' + err.error + '</span>';
+        }
+    }
+
+    async function checkTrade() {
+        const a   = document.getElementById('check-emailA').value.trim();
+        const b   = document.getElementById('check-emailB').value.trim();
+        const res = await fetch('/exchange/check?emailA=' + encodeURIComponent(a) + '&emailB=' + encodeURIComponent(b));
+        const data = await res.json();
+        const div  = document.getElementById('check-result');
+        div.innerHTML = data.canTrade
+            ? '<span class="success">Trade is valid — both users have active listings.</span>'
+            : '<span class="error">Trade not possible — one or both users have not posted a draw time.</span>';
+    }
+
+    async function executeTrade() {
+        const a   = document.getElementById('trade-emailA').value.trim();
+        const b   = document.getElementById('trade-emailB').value.trim();
+        const res = await fetch('/exchange/trade?emailA=' + encodeURIComponent(a) + '&emailB=' + encodeURIComponent(b));
+        const data = await res.json();
+        const div  = document.getElementById('trade-result');
+        if (data.success) {
+            div.innerHTML = '<span class="success">Trade complete — draw times have been swapped!</span>';
+            loadSlots();
+        } else {
+            div.innerHTML = '<span class="error">Trade failed: ' + (data.error || 'Unknown error') + '</span>';
+        }
+    }
+
+    async function purchaseListing() {
+        const buyer  = document.getElementById('buy-emailA').value.trim();
+        const seller = document.getElementById('buy-emailB').value.trim();
+        const res    = await fetch('/exchange/purchase?buyer=' + encodeURIComponent(buyer) + '&seller=' + encodeURIComponent(seller));
+        const data   = await res.json();
+        const div    = document.getElementById('buy-result');
+        if (data.success) {
+            div.innerHTML = '<span class="success">Purchase complete — draw time acquired!</span>';
+            loadMarket();
+        } else {
+            div.innerHTML = '<span class="error">Purchase failed: ' + (data.error || 'Unknown error') + '</span>';
+        }
+    }
+
+    // Load rooms on page open
+    loadRooms();
+</script>
+
+</body>
+</html>

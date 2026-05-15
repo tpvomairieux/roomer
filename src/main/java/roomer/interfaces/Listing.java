@@ -11,12 +11,12 @@ public class Listing {
 
     private final String ownerEmail;
     private final LocalDateTime drawTime;
-    private final Price priceInfo; // See Price.java for more info
+    private final double price;
 
-    public Listing(String ownerEmail, LocalDateTime drawTime, Price priceInfo) {
+    public Listing(String ownerEmail, LocalDateTime drawTime, double price) {
         this.ownerEmail = ownerEmail;
         this.drawTime = drawTime;
-        this.priceInfo = priceInfo;
+        this.price = price;
     }
 
     public String getEmail() {
@@ -27,16 +27,12 @@ public class Listing {
         return drawTime;
     }
 
-    public Price getPriceInfo() {
-        return priceInfo;
+    public double getPrice() {
+        return price;
     }
 
     @Override
     public String toString() {
-        if (priceInfo.isAuction()) {
-            return "Owner: " + ownerEmail + " | Draw Time: " + drawTime + " | Auction" + " | Highest Bid: "
-                    + priceInfo.buyerPrice;
-        }
-        return "Owner: " + ownerEmail + " | Draw Time: " + drawTime + " | BIN " + " | Price: " + priceInfo.sellerPrice;
+        return "Owner: " + ownerEmail + " | Draw Time: " + drawTime + " | Price: " + price;
     }
 }

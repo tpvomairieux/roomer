@@ -1,51 +1,28 @@
+/**
+ * TreeMap object to store all user listings, supporting sorting by best time
+ *
+ * @author Evan Tran, Phu Vo, Ronnie Ho
+ */
+
 package roomer;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 
 import roomer.interfaces.Listing;
 
-/**
- * A sorted collection of housing-draw {@link Listing}s, keyed by
- * {@link LocalDateTime}.
- *
- * <p>
- * Backed by a {@link TreeMap} (Red-Black BST), so all core operations run in
- * O(log n). Multiple listings may share the same draw time; they are stored in
- * insertion-order within a {@link LinkedHashMap} at each time key (keyed by
- * listing id for O(1) individual removal).
- *
- * <p>
- * Iteration via {@link #allSorted()} yields listings earliest-first.
- */
 public class ListingTree {
-
-    // TreeMap gives us a sorted BST over LocalDateTime keys.
-    // Each key maps to a LinkedHashMap<listingId, Listing> so we can:
-    // • handle draw-time collisions
-    // • remove a specific listing by id in O(1) within the bucket
     private final TreeMap<LocalDateTime, LinkedHashMap<String, Listing>> tree = new TreeMap<>();
 
-    // Secondary index: listingId → drawTime, for O(log n) removals by id.
     private final HashMap<String, LocalDateTime> emailIndex = new HashMap<>();
 
     private int size = 0;
 
-    // ── Mutators ─────────────────────────────────────────────────────────────
-
-    /**
-     * Inserts a listing. Duplicate emailss are rejected.
-     *
-     * @throws IllegalArgumentException if a listing with the same email exists
-     */
     public void add(Listing listing) {
         if (listing == null) {
             throw new NullPointerException("Listing must not be null");
@@ -62,11 +39,6 @@ public class ListingTree {
         size++;
     }
 
-    /**
-     * Removes the listing with the given id.
-     *
-     * @return the removed listing, or {@code null} if not found
-     */
     public Listing remove(String email) {
         LocalDateTime key = emailIndex.remove(email);
         if (key == null)
@@ -81,69 +53,6 @@ public class ListingTree {
         return removed;
     }
 
-    // ── Queries ───────────────────────────────────────────────────────────────
-
-    /**
-     * Returns the listing with the earliest draw time, or {@code null} if empty.
-     */
-    public Listing peekEarliest() {
-        if (tree.isEmpty())
-            return null;
-        return tree.firstEntry().getValue().values().iterator().next();
-    }
-
-    /** Returns the listing with the latest draw time, or {@code null} if empty. */
-    public Listing peekLatest() {
-        if (tree.isEmpty())
-            return null;
-        LinkedHashMap<String, Listing> bucket = tree.lastEntry().getValue();
-        // Walk to the last entry in insertion order
-        Listing last = null;
-        for (Listing l : bucket.values())
-            last = l;
-        return last;
-    }
-
-    /**
-     * Removes and returns the listing with the earliest draw time.
-     *
-     * @return the earliest listing, or {@code null} if empty
-     */
-    public Listing pollEarliest() {
-        if (tree.isEmpty())
-            return null;
-        Map.Entry<LocalDateTime, LinkedHashMap<String, Listing>> entry = tree.firstEntry();
-        Iterator<Map.Entry<String, Listing>> it = entry.getValue().entrySet().iterator();
-        Map.Entry<String, Listing> first = it.next();
-        it.remove(); // remove from bucket
-        emailIndex.remove(first.getKey());
-        if (entry.getValue().isEmpty())
-            tree.pollFirstEntry();
-        size--;
-        return first.getValue();
-    }
-
-    /**
-     * Returns a snapshot list of all listings with draw times in [{@code from},
-     * {@code to}],
-     * sorted earliest-first.
-     */
-    public List<Listing> range(LocalDateTime from, LocalDateTime to) {
-        Objects.requireNonNull(from, "from must not be null");
-        Objects.requireNonNull(to, "to must not be null");
-
-        List<Listing> result = new ArrayList<>();
-        for (LinkedHashMap<String, Listing> bucket : tree.subMap(from, true, to, true).values()) {
-            result.addAll(bucket.values());
-        }
-        return Collections.unmodifiableList(result);
-    }
-
-    /**
-     * Looks up a listing by email in O(log n).
-     *
-     * @return the listing, or {@code null} if not found
-     */
     public Listing find(String email) {
         LocalDateTime key = emailIndex.get(email);
         if (key == null)
@@ -151,11 +60,6 @@ public class ListingTree {
         return tree.get(key).get(email);
     }
 
-    /**
-     * Returns an unmodifiable snapshot of all listings, sorted earliest draw time
-     * first.
-     * Listings at the same draw time appear in insertion order.
-     */
     public List<Listing> allSorted() {
         List<Listing> result = new ArrayList<>(size);
         for (LinkedHashMap<String, Listing> bucket : tree.values()) {
@@ -164,22 +68,17 @@ public class ListingTree {
         return Collections.unmodifiableList(result);
     }
 
-    /** Returns {@code true} if the tree contains a listing with the given id. */
     public boolean containsEmail(String email) {
         return emailIndex.containsKey(email);
     }
 
-    /** Number of listings currently stored. */
     public int size() {
         return size;
     }
 
-    /** Returns {@code true} if no listings are stored. */
     public boolean isEmpty() {
         return size == 0;
     }
-
-    // ── Object override ───────────────────────────────────────────────────────
 
     @Override
     public String toString() {

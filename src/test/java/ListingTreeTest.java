@@ -1,18 +1,19 @@
+
 /**
- * Tests for DrawExchange — run the main method to see results.
+ * Tests for ListingTree — run the main method to see results.
  *
  * @author Evan Tran, Phu Vo, Ronnie Ho
  */
-package roomer;
 
 import roomer.interfaces.Listing;
 import roomer.interfaces.User;
 import roomer.interfaces.Users;
+import roomer.ListingTree;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class DrawExchangeTest {
+public class ListingTreeTest {
 
     static int passed = 0;
     static int failed = 0;
@@ -52,7 +53,7 @@ public class DrawExchangeTest {
 
     // returns a fresh exchange + users every time so tests don't interfere
     static Object[] setup() {
-        DrawExchange exchange = new DrawExchange();
+        ListingTree tree = new ListingTree();
         Users users = new Users();
 
         User alicia = new User("alicia.park@pomona.edu", "pass",
@@ -66,14 +67,14 @@ public class DrawExchangeTest {
         users.add(bryson);
         users.add(carol);
 
-        return new Object[]{exchange, users, alicia, bryson, carol};
+        return new Object[] { tree, users, alicia, bryson, carol };
     }
 
     // ---- post() ----
 
-    static void testPost() {
+    static void testAdd() {
         Object[] s = setup();
-        DrawExchange exchange = (DrawExchange) s[0];
+        ListingTree tree = new ListingTree();
         User alicia = (User) s[2];
 
         Listing l = exchange.post(alicia, 0.0);
@@ -100,18 +101,18 @@ public class DrawExchangeTest {
         DrawExchange exchange = (DrawExchange) s[0];
         User alicia = (User) s[2];
         User bryson = (User) s[3];
-        User carol  = (User) s[4];
+        User carol = (User) s[4];
 
         // post in reverse order — tree should sort by draw time
-        exchange.post(carol,  0.0);
+        exchange.post(carol, 0.0);
         exchange.post(bryson, 0.0);
         exchange.post(alicia, 0.0);
 
         List<Listing> sorted = exchange.getAllListings();
         check("listings sorted earliest first",
                 "alicia.park@pomona.edu".equals(sorted.get(0).getEmail()) &&
-                "bryson.young@pomona.edu".equals(sorted.get(1).getEmail()) &&
-                "carol.rivera@pomona.edu".equals(sorted.get(2).getEmail()));
+                        "bryson.young@pomona.edu".equals(sorted.get(1).getEmail()) &&
+                        "carol.rivera@pomona.edu".equals(sorted.get(2).getEmail()));
     }
 
     // ---- canTrade() ----
@@ -146,9 +147,9 @@ public class DrawExchangeTest {
     static void testExecuteTradeSwaps() {
         Object[] s = setup();
         DrawExchange exchange = (DrawExchange) s[0];
-        Users users  = (Users) s[1];
-        User alicia  = (User) s[2];
-        User bryson  = (User) s[3];
+        Users users = (Users) s[1];
+        User alicia = (User) s[2];
+        User bryson = (User) s[3];
 
         LocalDateTime aliciaTime = alicia.getDrawTime();
         LocalDateTime brysonTime = bryson.getDrawTime();

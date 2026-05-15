@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class User {
 
     String email;
-    String password; // do we want to keep password?
+    String password;
     LocalDateTime drawTime;
     double balance;
     boolean admin; // How do we want to set?
@@ -28,6 +28,10 @@ public class User {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public double getBalance() {

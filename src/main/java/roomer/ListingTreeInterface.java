@@ -72,25 +72,34 @@ public class ListingTreeInterface {
                 LocalDateTime.parse("Apr 9, 2025 7:06 PM", FORMATTER)));
     }
 
-    // Can implement login system if we build website GUI
-
-    // This method serves as the frontend for getting user information for listing,
-    // and passing it to Listing Tree
-
-    private static void postSlot(Scanner scanner, Users users, ListingTree tree) { // Testing please
+    private static void postSlot(Scanner scanner, Users users, ListingTree tree) {
         User user = new User();
         double binPrice;
 
         while (true) { // Checks if user is in system and therefore eligible to make a listing
-            System.out.print("Enter your email: ");
+            System.out.println("Enter your Pomona email: ");
             String email = scanner.nextLine();
 
-            user = users.get(email);
-
-            if (user == null) {
-                System.out.println("User not found.");
+            if (email.endsWith("@mymail.pomona.edu") || email.endsWith("@pomona.edu")) {
+                user = users.get(email);
+                if (user == null) {
+                    System.out.println("Warning: User not found.");
+                    return;
+                } else {
+                    break;
+                }
             } else {
+                System.out.println("Warning: not a valid Pomona email.");
+            }
+        }
+
+        while (true) { // Checks if user password is correct
+            System.out.println("Enter your password: ");
+            String password = scanner.nextLine();
+            if (user.getPassword().equals(password)) {
                 break;
+            } else {
+                System.out.println("Warning: incorrect password.");
             }
         }
 
@@ -141,10 +150,56 @@ public class ListingTreeInterface {
         System.out.println("New listing posted");
     }
 
-    // private static void removeSlot() for later
+    private static void removeSlot(Scanner scanner, Users users, ListingTree tree) {
+        User user = new User();
+        while (true) { // Checks if user is in system and therefore eligible to make a listing
+            System.out.println("Enter your Pomona email: ");
+            String email = scanner.nextLine();
 
-    // This method serves as the frontend for getting the listings
-    // Maybe add sorting here?
+            if (email.endsWith("@mymail.pomona.edu") || email.endsWith("@pomona.edu")) {
+                user = users.get(email);
+                if (user == null) {
+                    System.out.println("Warning: User not found.");
+                    return;
+                } else {
+                    break;
+                }
+            } else {
+                System.out.println("Warning: not a valid Pomona email.");
+            }
+        }
+
+        while (true) { // Checks if user password is correct
+            System.out.println("Enter your password: ");
+            String password = scanner.nextLine();
+            if (user.getPassword().equals(password)) {
+                break;
+            } else {
+                System.out.println("Warning: incorrect password.");
+            }
+        }
+
+        while (true) { // Checks if user wants to remove listing
+            System.out.println("Would you like to remove your time?");
+            System.out.println("1. Confirm");
+            System.out.println("2. Cancel");
+
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    tree.remove(user.getEmail());
+                    return;
+
+                case "2":
+                    System.out.println("Cancelling removal.");
+                    return;
+
+                default:
+                    System.out.println("Invalid selection. Please try again!");
+            }
+        }
+    }
 
     private static void viewSlots(ListingTree tree) {
         System.out.println("All Listings: "); // Sorted from earliest draw to latest
@@ -196,18 +251,27 @@ public class ListingTreeInterface {
             System.out.println("Purchase " + sellerListing.getEmail() + "'s time for " + binPrice + "?");
             System.out.println("1. Yes");
             System.out.println("2. No");
-            int buy = Integer.parseInt(scanner.nextLine());
-            if (!checkBalance(buyer, binPrice)) {
-                System.out.println(
-                        "Warning: User does not have enough money in account balance. Please add more and try again");
-                return;
+
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    if (!checkBalance(buyer, binPrice)) {
+                        System.out.println(
+                                "Warning: User does not have enough money in account balance. Please add more and try again");
+                        return;
+                    }
+                    executePurchase(buyer, seller, binPrice, tree);
+                    System.out.println("Purchase successfully submitted!");
+                    break;
+
+                case "2":
+                    System.out.println("Cancelling removal.");
+                    return;
+
+                default:
+                    System.out.println("Invalid selection. Please try again!");
             }
-            if (buy == 1) {
-                executePurchase(buyer, seller, binPrice, tree);
-                System.out.println("Purchase successfully submitted!");
-                break;
-            }
-            return;
         }
     }
 

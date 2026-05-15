@@ -1,5 +1,7 @@
 /**
- * Object that represents a list of all rooms
+ * Object that represents a list of all rooms. We store indviidual room objects into a HashMap with each room's 
+ * cleaned name as the key. There are methods to get rooms, search for rooms via filters, and look-up rooms 
+ * by draw times. 
  *
  * @author Evan Tran, Phu Vo, Ronnie Ho
  *
@@ -15,38 +17,63 @@ import roomer.RoomDataLoader;
 
 public class Rooms {
 
+    // Stores all rooms with its clean room name: ex) "Blaisdell - 2."
     private HashMap<String, Room> rooms = new HashMap<>();
 
+    /**
+     * Constructs an empty room object. Rooms are then added via loading them through the Master Excel spreadsheet. 
+     */
     public Rooms() {
+
         this.rooms = new HashMap<>();
     }
 
+    /**
+     * Adds a room into the rooms collection.
+     * 
+     * By using a hashmap, we will later by able to quickly look up the room by its name, giving us an average case of constant search time.
+     * @param room (Object) the room to add. 
+     */
     public void add(Room room) {
+
         rooms.put(room.getRoomName(), room);
     }
 
+    /**
+     * Gets a specific room by its cleaned room name. 
+     * @param roomName (String) the cleaned name of the room. 
+     * @return (String) the room object associated to the cleaned name, or null, if the room doesn't exist. 
+     */
     public Room get(String roomName) {
+
         return rooms.get(roomName);
     }
 
+    /**
+     * Gets the total number of rooms stored in the hashmap.
+     * @return (Int) the number of rooms in the data collection. 
+     */
     public int size() {
 
         return rooms.size();
     }
 
-    public void remove(String roomName) {
-        rooms.remove(roomName);
-    }
-
+    /**
+     * Gets all rooms in the collection as a List. 
+     * 
+     * When filtering, we're able to loop through every room easily, or print out a collection. 
+     * @return (List) a list containing every room object currently stored.
+     */
     public List<Room> getAllRooms() {
 
         return new ArrayList<>(rooms.values());
     }
 
     /**
+     * Filters rooms by building.
      * 
-     * @param building
-     * @return
+     * @param building (Enum) The building's enum value to filter by. 
+     * @return (List) a list of rooms in the given building. 
      */
     public List<Room> filterByBuilding(Building building) {
 
@@ -63,9 +90,9 @@ public class Rooms {
     }
 
     /**
-     * 
-     * @param occupancy
-     * @return
+     * Filter rooms by occupancy status.
+     * @param occupancy (Int) the number of students a room can hold
+     * @return (List) a list of rooms with the given occupancy. 
      */
     public List<Room> filterByOccupancy(int occupancy) {
 
@@ -82,9 +109,9 @@ public class Rooms {
     }
 
     /**
-     * 
-     * @param AC
-     * @return
+     * Filters room by AC status.
+     * @param AC (Boolean) A true/false ac status based off the building information of the room.
+     * @return (List) a list of rooms matching the requested AC status
      */
     public List<Room> filterByAC(boolean hasAC) {
 
@@ -101,10 +128,10 @@ public class Rooms {
     }
 
     /**
-     * 
-     * @param min
-     * @param max
-     * @return
+     * Filters rooms by square footage range.
+     * @param min (Int) the minimum square footage allowed
+     * @param max (Int) the max square footage allowed.
+     * @return (List) a list of rooms within the given square footage range
      */
     public List<Room> filterBySquareFootage(int min, int max) {
 
@@ -123,13 +150,20 @@ public class Rooms {
     }
 
     /**
+     * Filters rooms using multiple optional criteria. 
+     * 
+     * All parameters can be null. If parameters are null, the filter is ignored.
+     * 
+     * Users are able to filter through multiple categories with any combination they want,
+     * 
+     * or a single category. Parameter information documented above. 
      * 
      * @param building
      * @param occupancy
      * @param hasAC
      * @param minSize
      * @param maxSize
-     * @return
+     * @return (List) a list of rooms matching all selected filters. 
      */
     public List<Room> filter(Building building, Integer occupancy, Boolean hasAC, Integer minSize, Integer maxSize) {
 
@@ -157,12 +191,16 @@ public class Rooms {
                 continue;
             }
 
-            result.add(room);
+            result.add(room); // If a room passes the above selected filters, add to the resulting list.
         }
 
         return result;
     }
 
+    /**
+     * Prints every room in the given list.
+     * @param list (List) the list of rooms to print. 
+     */
     public void printRooms(List<Room> list) {
 
         for (Room room : list) {

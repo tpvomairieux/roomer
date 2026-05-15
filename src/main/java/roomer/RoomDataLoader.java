@@ -1,80 +1,84 @@
 /**
- * Documentation of methods explored from https://poi.apache.org/apidocs/dev/org/apache/poi/ss/usermodel/DataFormatter.html,
- * and use in several methods!
+ * Loads room data from a CSV file and creates Room objects.
+ *
+ * The CSV file should come from the cleaned master sheet and includes:
+ * Square Footage of Unique Dorms, Unique Dorms, 2023 Selection Time,
+ * 2024 Selection Time, 2025 Selection Time, Occupancy, and AC status. 
  *
  * @author Evan Tran, Phu Vo, Ronnie Ho
  *
  */
 package roomer;
 
-import java.io.FileInputStream;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Iterator;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.time.format.DateTimeFormatter;
 
 import roomer.interfaces.Room;
 import roomer.interfaces.Rooms;
 
 public class RoomDataLoader {
 
+    // Column indexes from the cleaned CSV. Helps avoid later "magic variables" by defining them here. 
+    private static final int SQFT_COL = 0;
+    private static final int RAW_NAME_COL = 1;
+    private static final int TIME_2023_COL = 4;
+    private static final int TIME_2024_COL = 7;
+    private static final int TIME_2025_COL = 10;
+    private static final int OCCUPANCY_COL = 11;
+    private static final int AC_COL = 12;
+
     /**
-     * 
-     * @param filePath
-     * @return
-     * @throws IOException
+     * Loads room data from a CSV file.
+     *
+     * Each row in the CSV becomes one Room object. The Room object then processes
+     * its raw name into a cleaned room name, building, and suite if applicable.
+     *
+     * @param filePath the path to the CSV file
+     * @return a Rooms object containing all loaded rooms
+     * @throws IOException if the file cannot be opened or read
      */
     public static Rooms load(String filePath) throws IOException {
 
         Rooms rooms = new Rooms();
-        DataFormatter formatter = new DataFormatter();
 
-        try (FileInputStream stream = new FileInputStream(filePath); XSSFWorkbook workbook = new XSSFWorkbook(stream)) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
 
-            XSSFSheet sheet = workbook.getSheet("Master"); // Takes data only from the master sheet in our excel file.
+            // Skip the header row.
+            reader.readLine();
 
-            if (sheet == null) { // Should only throw an exception if this is bugged, and our master sheet is
-                                 // missing.
+            String line;
 
-                throw new IllegalArgumentException("Worksheet 'Master' not found.");
-            }
+            // Read the CSV one row at a time until there are no more rows.
+            while ((line = reader.readLine()) != null) {
 
-            Iterator<Row> rows = sheet.iterator();
+                String[] parts = splitCSVLine(line); // Split the current CSV row into individual column values.
 
-            // This conditional skips the header row so we only take the data numbers.
-            if (rows.hasNext()) {
-
-                rows.next();
-            }
-
-            while (rows.hasNext()) {
-
-                Row row = rows.next();
-
-                String rawName = getString(row.getCell(0), formatter);
-
-                // Skip if there's a blank room-name.
-                if (rawName == null || rawName.isBlank()) {
-
+                // Skip rows that do not have enough columns.
+                if (parts.length < 13) {
                     continue;
                 }
 
-                int sqft = getInt(row.getCell(1), formatter);
+                int sqft = getInt(parts[SQFT_COL]);
 
-                LocalDateTime time2023 = getDateTime(row.getCell(5));
-                LocalDateTime time2024 = getDateTime(row.getCell(8));
-                LocalDateTime time2025 = getDateTime(row.getCell(11));
+                String rawName = getString(parts[RAW_NAME_COL]);
 
-                int occupancy = getInt(row.getCell(12), formatter);
+                LocalDateTime time2023 = getDateTime(parts[TIME_2023_COL]);
+                LocalDateTime time2024 = getDateTime(parts[TIME_2024_COL]);
+                LocalDateTime time2025 = getDateTime(parts[TIME_2025_COL]);
 
-                boolean ac = getBoolean(row.getCell(13), formatter);
+                int occupancy = getInt(parts[OCCUPANCY_COL]);
 
-                Room room = new Room(rawName, sqft, time2023, time2024, time2025, occupancy, ac);
+                boolean ac = getBoolean(parts[AC_COL]);
+
+                // Skip blank or incomplete rows.
+                if (rawName == null || rawName.isBlank()) {
+                    continue;
+                }
+
+                Room room = new Room(rawName, sqft, time2023, time2024, time2025, occupancy, ac); // Create a Room object using the cleaned CSV values.
 
                 rooms.add(room);
             }
@@ -84,88 +88,109 @@ public class RoomDataLoader {
     }
 
     /**
-     * Helper method for extracting strings from cell in excel.
-     * 
-     * @param cell
-     * @param formatter
-     * @return
+     * Splits a CSV line into columns.
+     *
+     * This handles normal comma-separated CSV lines and quoted cells.
+     *
+     * @param line one line from the CSV file
+     * @return an array of column values
      */
+    private static String[] splitCSVLine(String line) {
 
-    private static String getString(Cell cell, DataFormatter formatter) {
-
-        if (cell == null) {
-
-            return null;
-        }
-        return formatter.formatCellValue(cell).trim(); // .formatCellValue returns the value of the cell as a string
-                                                       // regardless of the original type.
+        return line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1); // Splits on commas only when the comma is not inside quotation marks, keeps trailing blank cells.
     }
 
     /**
-     * Helper method to extract integers from a cell.
-     * 
-     * @param cell
-     * @param formatter
-     * @return
+     * Cleans a string value from the CSV.
+     *
+     * @param value the raw CSV value
+     * @return a trimmed string with surrounding quotes removed
      */
-    private static int getInt(Cell cell, DataFormatter formatter) {
+    private static String getString(String value) {
 
-        if (cell == null) {
+        // If the value does not exist, return null.
+        if (value == null) {
+            return null;
+        }
 
+        value = value.trim(); 
+
+         // If the value is surrounded by quotation marks, remove those outside quotes.
+        if (value.startsWith("\"") && value.endsWith("\"") && value.length() >= 2) {
+            value = value.substring(1, value.length() - 1);
+        }
+
+        return value.trim(); // Trim again in case removing quotes exposed extra whitespace.
+    }
+
+    /**
+     * Converts a CSV value into an integer.
+     *
+     * @param value the raw CSV value
+     * @return the integer value, or 0 if the value is blank or invalid
+     */
+    private static int getInt(String value) {
+
+        value = getString(value);
+
+        if (value == null || value.isBlank()) {
             return 0;
         }
 
-        try {
+        value = value.replaceAll("[^0-9]", "");
 
-            return (int) cell.getNumericCellValue();
-
-        } catch (NumberFormatException e) {
-
-            String text = formatter.formatCellValue(cell).trim();
-            text = text.replaceAll("[^0-9]", "");
-
-            if (!text.isEmpty()) {
-
-                return Integer.parseInt(text);
-            }
+        if (value.isBlank()) {
+            return 0;
         }
 
-        return 0;
+        return Integer.parseInt(value);
     }
 
     /**
-     * Helper method to see if the room of choice has AC from a cell.
-     * 
-     * @param cell
-     * @param formatter
-     * @return
+     * Converts a CSV value into a boolean.
+     *
+     * @param value the raw CSV value
+     * @return true if the value is TRUE, false otherwise
      */
-    private static boolean getBoolean(Cell cell, DataFormatter formatter) {
+    private static boolean getBoolean(String value) {
 
-        if (cell == null) {
+        value = getString(value);
 
+        if (value == null) {
             return false;
         }
 
-        String text = formatter.formatCellValue(cell).trim();
-
-        return text.equals("TRUE");
+        return value.equalsIgnoreCase("TRUE");
     }
 
     /**
-     * Helper method to get the time of room draw from a cell.
-     * 
-     * @param cell
-     * @return
+     * Converts a CSV value into a LocalDateTime.
+     *
+     * The CSV currently stores dates like:
+     * 4/13/2023 18:54
+     *
+     * Blank cells and "No Selection Time Issued" return null.
+     *
+     * @param value the raw CSV value
+     * @return the parsed LocalDateTime, or null if no valid time exists
      */
-    private static LocalDateTime getDateTime(Cell cell) {
-        if (cell == null) {
+    private static LocalDateTime getDateTime(String value) {
+
+        value = getString(value);
+
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        if (value.equalsIgnoreCase("No Selection Time Issued")) {
             return null;
         }
 
         try {
 
-            return cell.getLocalDateTimeCellValue();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy H:mm");
+
+            return LocalDateTime.parse(value, formatter);
 
         } catch (Exception e) {
 
@@ -173,31 +198,35 @@ public class RoomDataLoader {
         }
     }
 
+    /**
+     * Main method for testing the CSV loader.
+     *
+     * @param args
+     */
     public static void main(String[] args) {
 
         try {
-            Rooms rooms = load("CS62 Final Project Data.xlsx");
-            System.out.println("Loaded " + rooms.size() + " rooms.");
 
-            if (rooms.size() > 0) {
-                System.out.println("First room loaded!");
-            }
+            Rooms rooms = load("master.csv");
+
+            System.out.println("Loaded " + rooms.size() + " rooms.");
 
             int count = 0;
 
             for (Room r : rooms.getAllRooms()) {
 
-                System.out.println("Room: " + r.getRoomName() + " | Occupancy: " + r.getOccupancy());
+                System.out.println(r);
 
                 count++;
 
-                if (count == 10)
+                if (count == 20) {
                     break;
+                }
             }
 
         } catch (IOException e) {
+
             e.printStackTrace();
         }
     }
-
 }

@@ -1,6 +1,9 @@
 /**
  * User interface (currently just in the terminal) for Roomer. 
- *
+ * This class creates a command-line menu where users can view all rooms,
+ * filter them, and search for specific rooms.
+ * 
+ * Room data was loaded from the master csv file (see RoomDataLoader.java).
  * @author Evan Tran, Phu Vo, Ronnie Ho
  *
  */
@@ -17,6 +20,10 @@ import roomer.interfaces.Rooms;
 
 public class RoomInteractive {
 
+    /**
+     * Main method that runs the Roomer terminal interface.
+     * @param args
+     */
     public static void main(String[] args) {
 
         Scanner scanner = new Scanner(System.in);
@@ -25,9 +32,9 @@ public class RoomInteractive {
 
         try {
 
-            rooms = RoomDataLoader.load("CS62 Final Project Data.xlsx");
+            rooms = RoomDataLoader.load("master.csv");
 
-        } catch (IOException e) {
+        } catch (IOException e) { // If the CSV file cannot be found or read, stop the program.
 
             System.out.println("Couldn't load the data.");
             e.printStackTrace();
@@ -37,39 +44,27 @@ public class RoomInteractive {
 
         System.out.println("Roomer Demo.");
 
-        boolean active = true;
+        boolean active = true; // Keeps the menu running until the user chooses to exit the program.
 
         while (active) {
             System.out.println("\nChoose from the following options! Please enter the number of your choice.");
             System.out.println("1. View all rooms");
             System.out.println("2. Search for a room");
-            // Remove methods 3 and 4 from public
-            System.out.println("3. Add a time"); // We would need to figure out how to write to the excel file. Need
-                                                 // to watch more YT vids. For now just store new times in memory.
-            System.out.println("4. Remove your time");
-            System.out.println("5. End");
+            System.out.println("3. End");
 
             String choice = scanner.nextLine();
 
             switch (choice) {
 
-                case "1":
+                case "1": // Lets the user either print every room or filter rooms.
                     viewRooms(scanner, rooms);
                     break;
 
-                case "2":
+                case "2": // Lets the user search for one specific room
                     searchForRoom(scanner, rooms);
                     break;
 
-                case "3": // Change
-                    addRoom(scanner, rooms);
-                    break;
-
-                case "4": // Change
-                    removeRoom(scanner, rooms);
-                    break;
-
-                case "5":
+                case "3": // Ends the menu loop.
                     active = false;
                     break;
 
@@ -84,6 +79,7 @@ public class RoomInteractive {
     }
 
     /**
+     * Displays the room-viewing menu.
      * 
      * @param scanner
      * @param rooms
@@ -107,6 +103,13 @@ public class RoomInteractive {
         }
     }
 
+    /**
+     * Lets the user filter rooms by building, occupancy, AC status, and square footage.
+     * 
+     * Each filter is optional. If the user presses enter without typing anything, the filter is skipped.
+     * @param scanner (Object) used to read user input
+     * @param rooms (Object) Collection of rooms being filtered. 
+     */
     private static void filter(Scanner scanner, Rooms rooms) {
 
         Building building = null;
@@ -153,7 +156,7 @@ public class RoomInteractive {
             hasAC = false;
         }
 
-        // Size Filter
+        // Size Filters
         System.out.print("Min sqft: ");
         String min = scanner.nextLine();
 
@@ -177,9 +180,41 @@ public class RoomInteractive {
     }
 
     /**
+     * Normalizes a room-name search so user input matches the stored HashMap key.
      * 
-     * @param scanner
-     * @param rooms
+     * Rooms are stored with spaces around the dash, such as "Walker - 719".
+     * @param input room name typed by the user
+     * @return normalized room name in the format "Building - RoomNumber"
+     */
+    private static String normalizeRoomName(String input) {
+
+    input = input.trim();
+
+    if (input.contains(" - ")) {
+        return input;
+    }
+
+    // If the user typed something like "Walker-729", convert it.
+    if (input.contains("-")) {
+
+        String[] parts = input.split("-", 2);
+
+        if (parts.length == 2) {
+            return parts[0].trim() + " - " + parts[1].trim();
+        }
+    }
+
+    return input;
+    }
+
+    /**
+     * Searches for one room by name.
+     * 
+     * The user's input is normalized before searching so both "Blaisdell-2"
+     * and "Blaisdell - 2" end up working for the same stored room. 
+     * 
+     * @param scanner (Object) used to read user input
+     * @param rooms (Object) Collection of rooms being filtered. 
      */
     private static void searchForRoom(Scanner scanner, Rooms rooms) {
 
@@ -187,59 +222,18 @@ public class RoomInteractive {
 
         String name = scanner.nextLine();
 
+        name = normalizeRoomName(name); // Convert user input into the same format used by Room.getRoomName().
+
         Room room = rooms.get(name);
 
         if (room != null) {
 
             System.out.println(room);
             System.out.println(room.completeDrawHistory());
+
         } else {
 
             System.out.println("Room not found.");
         }
     }
-
-    /**
-     * 
-     * @param scanner
-     * @param rooms
-     */
-    private static void addRoom(Scanner scanner, Rooms rooms) { // Admin function?
-
-        System.out.println("\nAdd New Listing-- please include room details!");
-
-        System.out.print("Enter raw room name (e.g., Blaisdell - 2): ");
-        String rawName = scanner.nextLine();
-
-        System.out.print("Square footage: ");
-        int sqft = Integer.parseInt(scanner.nextLine());
-
-        System.out.print("Occupancy: ");
-        int occupancy = Integer.parseInt(scanner.nextLine());
-
-        System.out.print("Has AC? (yes/no): ");
-        boolean hasAC = scanner.nextLine().equalsIgnoreCase("yes");
-
-        // Students would never know this lol
-        Room newRoom = new Room(rawName, sqft, null, null, null, occupancy, hasAC);
-
-        rooms.add(newRoom);
-
-        System.out.println("Listing added successfully!");
-    }
-
-    /**
-     * 
-     * @param scanner
-     * @param rooms
-     */
-    private static void removeRoom(Scanner scanner, Rooms rooms) {
-
-        System.out.print("Enter room name to remove: ");
-        String name = scanner.nextLine();
-
-        rooms.remove(name);
-        System.out.println("Listing successfully removed from roomer.");
-    }
-
 }

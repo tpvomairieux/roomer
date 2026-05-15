@@ -188,6 +188,10 @@ public class Valuation {
             return score;
         }
 
+        public Bucket getBucket() {
+            return bucket;
+        }
+
         @Override
         public String toString() {
             String output = listing.getEmail() + " " + bucket.getLabel() + " " + Math.round(score) + " "

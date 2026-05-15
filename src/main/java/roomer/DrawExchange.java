@@ -66,6 +66,13 @@ public class DrawExchange {
     }
 
     /**
+     * Exposes the internal listing tree (e.g., for valuation).
+     */
+    public ListingTree getListingTree() {
+        return listings;
+    }
+
+    /**
      * Executes a marketplace purchase: buyer pays seller's price, draw times swap.
      * Returns true if the purchase succeeded.
      */

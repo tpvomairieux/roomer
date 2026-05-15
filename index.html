@@ -147,7 +147,7 @@
             <h3>Active Listings</h3>
             <button onclick="loadSlots()">Refresh</button>
             <table style="margin-top:10px">
-                <thead><tr><th>Owner</th><th>Draw Time</th><th>Price</th></tr></thead>
+                <thead><tr><th>Owner</th><th>Draw Time</th><th>Price</th><th>Class</th><th>Est. Value</th></tr></thead>
                 <tbody id="slots-body"></tbody>
             </table>
 
@@ -198,7 +198,7 @@
             <h3>All Listings</h3>
             <button onclick="loadSlots()">Refresh</button>
             <table style="margin-top:10px">
-                <thead><tr><th>Owner</th><th>Draw Time</th><th>Price</th></tr></thead>
+                <thead><tr><th>Owner</th><th>Draw Time</th><th>Price</th><th>Class</th><th>Est. Value</th></tr></thead>
                 <tbody id="market-body"></tbody>
             </table>
 
@@ -318,53 +318,87 @@
         }
     }
 
-    async function loadSlots() {
-        const res     = await fetch('/exchange/slots');
-        const listings = await res.json();
-        const tbody   = document.getElementById('slots-body');
+    /** Formats a LocalDateTime ISO string (e.g. "2025-04-08T17:03") into "Apr 8, 2025 5:03 PM". */
+    function formatDrawTime(iso) {
+        if (!iso) return '—';
+        const [date, time] = iso.split('T');
+        const [year, month, day] = date.split('-').map(Number);
+        const [hour, minute]     = time.split(':').map(Number);
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const h12 = hour % 12 || 12;
+        const ampm = hour < 12 ? 'AM' : 'PM';
+        return `${months[month-1]} ${day}, ${year} ${h12}:${String(minute).padStart(2,'0')} ${ampm}`;
+    }
+
+    /** Renders a listings array into a 5-column table body. */
+    function renderListings(tbodyId, listings, valuationAvailable) {
+        const tbody = document.getElementById(tbodyId);
         tbody.innerHTML = '';
         if (listings.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="color:#888">No draw times posted yet.</td></tr>';
-        } else {
-            listings.forEach(l => {
-                tbody.innerHTML += `<tr>
-                    <td>${l.ownerEmail}</td>
-                    <td>${l.drawTime}</td>
-                    <td>${l.price === 0 ? '<span style="color:#888">Trade only</span>' : '$' + l.price.toFixed(2)}</td>
-                </tr>`;
-            });
+            tbody.innerHTML = `<tr><td colspan="5" style="color:#888">No listings posted yet.</td></tr>`;
+            return;
+        }
+        listings.forEach(l => {
+            const priceCell = (l.price === 0 || l.price == null)
+                ? '<span style="color:#888">Trade only</span>'
+                : '$' + Number(l.price).toFixed(2);
+            const classCell = valuationAvailable ? `<strong>${l.bucket}</strong>`   : '—';
+            const scoreCell = valuationAvailable ? Math.round(l.score)              : '—';
+            tbody.innerHTML += `<tr>
+                <td>${l.ownerEmail}</td>
+                <td>${formatDrawTime(l.drawTime)}</td>
+                <td>${priceCell}</td>
+                <td>${classCell}</td>
+                <td>${scoreCell}</td>
+            </tr>`;
+        });
+    }
+
+    /** Fetches /exchange/valuations from the local Java backend. */
+    async function fetchValuations() {
+        const res = await fetch('/exchange/valuations');
+        if (!res.ok) throw new Error('backend unavailable');
+        return await res.json();
+    }
+
+    const BACKEND_MSG = cols =>
+        `<tr><td colspan="${cols}" style="color:#c0392b;padding:10px">
+            Exchange features require RoomerServer to be running locally.
+         </td></tr>`;
+
+    async function loadSlots() {
+        const tbody = document.getElementById('slots-body');
+        try {
+            const data = await fetchValuations();
+            renderListings('slots-body', data.listings, data.valuationAvailable);
+        } catch (e) {
+            tbody.innerHTML = BACKEND_MSG(5);
         }
     }
 
     async function loadMarket() {
-        const res      = await fetch('/exchange/slots');
-        const listings = await res.json();
-        const tbody    = document.getElementById('market-body');
-        tbody.innerHTML = '';
-        if (listings.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="color:#888">No listings available yet.</td></tr>';
-        } else {
-            listings.forEach(l => {
-                tbody.innerHTML += `<tr>
-                    <td>${l.ownerEmail}</td>
-                    <td>${l.drawTime}</td>
-                    <td>${l.price === 0 ? '<span style="color:#888">Trade only</span>' : '$' + l.price.toFixed(2)}</td>
-                </tr>`;
-            });
+        const tbody = document.getElementById('market-body');
+        try {
+            const data = await fetchValuations();
+            renderListings('market-body', data.listings, data.valuationAvailable);
+        } catch (e) {
+            tbody.innerHTML = BACKEND_MSG(5);
         }
     }
 
     async function postSlot() {
         const email = document.getElementById('post-email').value.trim();
-        const res   = await fetch('/exchange/post?email=' + encodeURIComponent(email) + '&price=0');
         const div   = document.getElementById('post-result');
-        if (res.ok) {
-            div.innerHTML = '<span class="success">Draw time posted for exchange!</span>';
-            loadSlots();
-        } else {
-            const err = await res.json();
-            div.innerHTML = '<span class="error">Error: ' + err.error + '</span>';
-        }
+        try {
+            const res = await fetch('/exchange/post?email=' + encodeURIComponent(email) + '&price=0');
+            if (res.ok) {
+                div.innerHTML = '<span class="success">Draw time posted for exchange!</span>';
+                loadSlots();
+            } else {
+                const err = await res.json();
+                div.innerHTML = '<span class="error">Error: ' + err.error + '</span>';
+            }
+        } catch (e) { div.innerHTML = '<span class="error">Could not reach server.</span>'; }
     }
 
     async function postListing() {
@@ -372,53 +406,61 @@
         const price = document.getElementById('market-price').value.trim();
         const div   = document.getElementById('market-post-result');
         if (!price) { div.innerHTML = '<span class="error">Please enter a price.</span>'; return; }
-        const res = await fetch('/exchange/post?email=' + encodeURIComponent(email) + '&price=' + encodeURIComponent(price));
-        if (res.ok) {
-            div.innerHTML = '<span class="success">Listing posted!</span>';
-            loadMarket();
-        } else {
-            const err = await res.json();
-            div.innerHTML = '<span class="error">Error: ' + err.error + '</span>';
-        }
+        try {
+            const res = await fetch('/exchange/post?email=' + encodeURIComponent(email) + '&price=' + encodeURIComponent(price));
+            if (res.ok) {
+                div.innerHTML = '<span class="success">Listing posted!</span>';
+                loadMarket();
+            } else {
+                const err = await res.json();
+                div.innerHTML = '<span class="error">Error: ' + err.error + '</span>';
+            }
+        } catch (e) { div.innerHTML = '<span class="error">Could not reach server.</span>'; }
     }
 
     async function checkTrade() {
         const a   = document.getElementById('check-emailA').value.trim();
         const b   = document.getElementById('check-emailB').value.trim();
-        const res = await fetch('/exchange/check?emailA=' + encodeURIComponent(a) + '&emailB=' + encodeURIComponent(b));
-        const data = await res.json();
-        const div  = document.getElementById('check-result');
-        div.innerHTML = data.canTrade
-            ? '<span class="success">Trade is valid — both users have active listings.</span>'
-            : '<span class="error">Trade not possible — one or both users have not posted a draw time.</span>';
+        const div = document.getElementById('check-result');
+        try {
+            const res  = await fetch('/exchange/check?emailA=' + encodeURIComponent(a) + '&emailB=' + encodeURIComponent(b));
+            const data = await res.json();
+            div.innerHTML = data.canTrade
+                ? '<span class="success">Trade is valid — both users have active listings.</span>'
+                : '<span class="error">Trade not possible — one or both users have not posted a draw time.</span>';
+        } catch (e) { div.innerHTML = '<span class="error">Could not reach server.</span>'; }
     }
 
     async function executeTrade() {
         const a   = document.getElementById('trade-emailA').value.trim();
         const b   = document.getElementById('trade-emailB').value.trim();
-        const res = await fetch('/exchange/trade?emailA=' + encodeURIComponent(a) + '&emailB=' + encodeURIComponent(b));
-        const data = await res.json();
-        const div  = document.getElementById('trade-result');
-        if (data.success) {
-            div.innerHTML = '<span class="success">Trade complete — draw times have been swapped!</span>';
-            loadSlots();
-        } else {
-            div.innerHTML = '<span class="error">Trade failed: ' + (data.error || 'Unknown error') + '</span>';
-        }
+        const div = document.getElementById('trade-result');
+        try {
+            const res  = await fetch('/exchange/trade?emailA=' + encodeURIComponent(a) + '&emailB=' + encodeURIComponent(b));
+            const data = await res.json();
+            if (data.success) {
+                div.innerHTML = '<span class="success">Trade complete — draw times have been swapped!</span>';
+                loadSlots();
+            } else {
+                div.innerHTML = '<span class="error">Trade failed: ' + (data.error || 'Unknown error') + '</span>';
+            }
+        } catch (e) { div.innerHTML = '<span class="error">Could not reach server.</span>'; }
     }
 
     async function purchaseListing() {
         const buyer  = document.getElementById('buy-emailA').value.trim();
         const seller = document.getElementById('buy-emailB').value.trim();
-        const res    = await fetch('/exchange/purchase?buyer=' + encodeURIComponent(buyer) + '&seller=' + encodeURIComponent(seller));
-        const data   = await res.json();
         const div    = document.getElementById('buy-result');
-        if (data.success) {
-            div.innerHTML = '<span class="success">Purchase complete — draw time acquired!</span>';
-            loadMarket();
-        } else {
-            div.innerHTML = '<span class="error">Purchase failed: ' + (data.error || 'Unknown error') + '</span>';
-        }
+        try {
+            const res  = await fetch('/exchange/purchase?buyer=' + encodeURIComponent(buyer) + '&seller=' + encodeURIComponent(seller));
+            const data = await res.json();
+            if (data.success) {
+                div.innerHTML = '<span class="success">Purchase complete — draw time acquired!</span>';
+                loadMarket();
+            } else {
+                div.innerHTML = '<span class="error">Purchase failed: ' + (data.error || 'Unknown error') + '</span>';
+            }
+        } catch (e) { div.innerHTML = '<span class="error">Could not reach server.</span>'; }
     }
 
     // Load rooms on page open

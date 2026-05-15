@@ -40,6 +40,7 @@ public class RoomerServer {
     private static Rooms rooms;
     private static Users users;
     private static DrawExchange exchange;
+    private static final Valuation valuation = new Valuation();
 
     private static final DateTimeFormatter FORMATTER =
         DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a", Locale.ENGLISH);
@@ -55,6 +56,7 @@ public class RoomerServer {
         server.createContext("/rooms/filter",     new FilterHandler());
         server.createContext("/rooms/search",     new SearchHandler());
         server.createContext("/rooms",            new AllRoomsHandler());
+        server.createContext("/exchange/valuations", new ValuationsHandler());
         server.createContext("/exchange/slots",   new SlotsHandler());
         server.createContext("/exchange/post",    new PostSlotHandler());
         server.createContext("/exchange/check",   new CheckTradeHandler());
@@ -197,6 +199,47 @@ public class RoomerServer {
                 if (i < listings.size() - 1) sb.append(",");
             }
             json(ex, 200, sb.append("]").toString());
+        }
+    }
+
+    // GET /exchange/valuations — listings with valuation bucket and score when computable
+    static class ValuationsHandler implements HttpHandler {
+        public void handle(HttpExchange ex) throws IOException {
+            ListingTree tree = exchange.getListingTree();
+            List<Listing> sorted = tree.allSorted();
+            StringBuilder sb = new StringBuilder();
+            try {
+                Map<String, Valuation.Result> results = valuation.evaluate(tree);
+                sb.append("{\"valuationAvailable\":true,\"listings\":[");
+                boolean first = true;
+                for (Listing l : sorted) {
+                    if (!first) sb.append(",");
+                    Valuation.Result r = results.get(l.getEmail());
+                    String bucket = r != null ? r.getBucket().getLabel() : "Unknown";
+                    double bVal   = r != null ? r.getBucket().getValue() : 0;
+                    long   score  = r != null ? Math.round(r.getScore()) : 0;
+                    sb.append("{\"ownerEmail\":\"").append(l.getEmail()).append("\"")
+                      .append(",\"drawTime\":\"").append(l.getDrawTime()).append("\"")
+                      .append(",\"price\":").append(l.getPrice())
+                      .append(",\"bucket\":\"").append(bucket).append("\"")
+                      .append(",\"bucketValue\":").append(bVal)
+                      .append(",\"score\":").append(score)
+                      .append("}");
+                    first = false;
+                }
+                sb.append("]}");
+            } catch (IllegalStateException e) {
+                // Fewer than 2 distinct draw days — return listings without valuation
+                sb.append("{\"valuationAvailable\":false,\"listings\":[");
+                boolean first = true;
+                for (Listing l : sorted) {
+                    if (!first) sb.append(",");
+                    sb.append(listingJson(l));
+                    first = false;
+                }
+                sb.append("]}");
+            }
+            json(ex, 200, sb.toString());
         }
     }
 

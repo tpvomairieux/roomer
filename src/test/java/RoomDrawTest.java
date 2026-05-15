@@ -13,7 +13,7 @@ import roomer.ListingTree;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class ListingTreeTest {
+public class RoomDrawTest {
 
     static int passed = 0;
     static int failed = 0;

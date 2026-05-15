@@ -3,7 +3,6 @@
  *
  * @author Evan Tran, Phu Vo, Ronnie Ho
  */
-package roomer;
 
 import roomer.interfaces.Listing;
 import roomer.interfaces.User;

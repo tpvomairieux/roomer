@@ -28,6 +28,37 @@ Roomer is written in Java with a small browser frontend. The backend stores room
 
 The server uses Java's built-in `com.sun.net.httpserver` library rather than an external web framework. On startup, `RoomerServer` loads room data, creates demo users, initializes `DrawExchange`, registers endpoint handlers, and serves `index.html` at `http://localhost:8080`. Each handler reads URL query parameters, calls the appropriate backend method, serializes the result into JSON, and sends a response to the browser.
 
+The draw time exchange allows registered users to interact with their draw times in two ways. The first is a direct trade, where two users swap their draw times with each other at no cost. The second is a marketplace purchase, where a user posts their draw time at a set price and another user with sufficient account balance buys it, receiving the seller's draw time in return. Both interactions are managed by DrawExchange.java, which uses ListingTree as its backing data structure.
+
+ListingTree wraps a TreeMap keyed on LocalDateTime, which sorts all listings by draw time automatically using Java's natural ordering on LocalDateTime. Because LocalDateTime implements Comparable, the TreeMap maintains chronological order at all times without any additional sorting step. Alongside the TreeMap, ListingTree maintains a HashMap email index that maps each user's email to their draw time key in the tree. This index allows individual listings to be located and removed in constant time without traversing the tree. The combination of the TreeMap for sorted retrieval and the HashMap for fast individual access is what makes ListingTree well suited to the operations DrawExchange needs to perform.
+
+When a user calls post(), DrawExchange first checks the email index to confirm the user does not already have an active listing. If they do, the method returns null. Otherwise, it creates a new Listing object with the user's email, draw time, and price, and inserts it into the tree. canTrade() performs two lookups in the email index to confirm both users currently have active listings, returning true only if both are present. executeTrade() calls canTrade() as a precondition, then retrieves both User objects from the Users HashMap, stores one draw time in a temporary variable, swaps the two draw times using setTime(), and removes both listings from the tree. purchase() locates the seller's listing through the email index, retrieves both User objects, verifies the buyer's balance is greater than or equal to the listing price, deducts the price from the buyer's balance, credits the seller, updates the buyer's draw time to the seller's, and removes the seller's listing. On any failed precondition, both executeTrade() and purchase() return false without modifying any state.
+
+While not the hardest method from a data structures perspective, Valuation was the most difficult section in terms of design. Essentially, we wanted to give an estimate of how much each time slot in the tree should be, which posed questions, such as how much each timeslot should be, and how to calculate it.
+
+To begin, we needed to bucket all times into 1 of 4 categories: Sontag/Dialynis, Senior, Junior, and Sophomore times. Sontag and Dialynis are the most popular dorms and the most sought after, frequently being filled up in the first 24 minutes of senior housing draw, and after reading social media posts/conducting interviews, we concluded that many students would be willing to pay a premium price to live in these dorms. Thus, a section of Senior times become Sontag/Dialynis times if a Senior time is before 5:24 (which is when it historically runs out).  After that, senior times are more valuable than junior times, since seniors draw the day before juniors (and juniors before sophomores). 
+
+However, we don't have the actual dates for future room draws. Thus, to actually calculate it, we have the method inferBoundaries() which extracts all unique calendar dates found in the listing tree, sorts them, and assigns:
+days[0] → senior day
+days[1] → junior day
+days[2] → sophomore day
+
+For dates that may be outside of these parameters, we simply assign them to either senior (Sontag/Dialynis), or sophomore, depending on whether the date is before/after the 3 draw dates. This is not the best solution, but we assume that students do not misrepresent their information, meaning students’ drawtime date should only be one of three dates. 
+
+The next challenge comes from estimating values - although some people are willing to pay 2000 for a “good” senior time, what constitutes good? In addition, how much would people be willing to pay for an “okay” senior time? What about juniors and sophomores? Based on our interviews and searching on social media, we roughly came up with the following pricing boundaries:
+
+2400 to 2100 for Sontag/Dialynas
+2000 to 1500 for Senior
+1500 to 1000 for Junior
+1000 to 500 for Sophomore
+
+The upper bounds are generally more accurate than lower bounds (simply because more information was available), but the logic was that if students are willing to offer the ceiling price for a time, they would likely offer the same price for the floor price of the prior date (for ex, if someone wanted a 5:00 pm junior time, they would likely be willing to pay the same amount for a senior 10:30 pm time, since their room selection options would be roughly the same). 
+
+
+To calculate valuations, we used the formula:
+Multiplier = minutes after start / minutes from start to end
+Value = ceiling - multiplier * (ceiling - floor)
+
 ## Data Structure Justification
 
 The room directory is backed by a `HashMap` from cleaned room name to `Room` object. This makes direct search by room name efficient because a room can be retrieved in average-case O(1) time. The tradeoff is that filters such as building, occupancy, AC, and square-footage range require scanning all rooms, but that is acceptable for this project because filters naturally ask a question about the full inventory and the dataset size is manageable.

@@ -45,7 +45,7 @@ public class RoomerServer {
         DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a", Locale.ENGLISH);
 
     public static void main(String[] args) throws IOException {
-        rooms = RoomDataLoader.load("CS62 Final Project Data.xlsx");
+        rooms = RoomDataLoader.load("master.csv");
         users = new Users();
         exchange = new DrawExchange();
         seedUsers();

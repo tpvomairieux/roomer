@@ -212,21 +212,164 @@ public class Rooms {
     public static void main(String[] args) {
 
         try {
-            Rooms rooms = RoomDataLoader.load("CS62 Final Project Data.xlsx");
 
+            // Load rooms from the master CSV file.
+            Rooms rooms = RoomDataLoader.load("master.csv");
+
+            // Test size()
+            System.out.println("Testing size():");
             System.out.println("Loaded " + rooms.size() + " rooms.");
+            System.out.println();
 
-            for (Room r : rooms.getAllRooms()) {
-                System.out.println("Room: " + r.getRoomName() + " | Occupancy: " + r.getOccupancy());
+            // Test getAllRooms()
+            System.out.println("Testing getAllRooms():");
+            List<Room> allRooms = rooms.getAllRooms();
+            System.out.println("getAllRooms() returned " + allRooms.size() + " rooms.");
+
+            if (!allRooms.isEmpty()) {
+                System.out.println("First room in list: " + allRooms.get(0));
+            }
+            System.out.println();
+
+            // Test printRooms()
+            System.out.println("Testing printRooms() with first 5 rooms:");
+            List<Room> firstFiveRooms = new ArrayList<>();
+
+            for (int i = 0; i < allRooms.size() && i < 5; i++) {
+                firstFiveRooms.add(allRooms.get(i));
             }
 
+            rooms.printRooms(firstFiveRooms);
+            System.out.println();
+
+            // Test get(String roomName)
+            System.out.println("Testing get(String roomName):");
+
+            if (!allRooms.isEmpty()) {
+
+                String testRoomName = allRooms.get(0).getRoomName();
+                Room foundRoom = rooms.get(testRoomName);
+
+                System.out.println("Searching for: " + testRoomName);
+
+                if (foundRoom != null) {
+                    System.out.println("Found room: " + foundRoom);
+                } else {
+                    System.out.println("Room was not found.");
+                }
+            }
+            System.out.println();
+
+            // Test add(Room room)
+            System.out.println("Testing add(Room room):");
+
+            Room testRoom = new Room(
+                    "Smiley - 999",
+                    150,
+                    null,
+                    null,
+                    null,
+                    1,
+                    false
+            );
+
+            rooms.add(testRoom);
+
+            System.out.println("Added test room: " + testRoom.getRoomName());
+            System.out.println("New size after add(): " + rooms.size());
+
+            Room addedRoom = rooms.get("Smiley - 999");
+
+            if (addedRoom != null) {
+                System.out.println("Successfully found added room: " + addedRoom);
+            } else {
+                System.out.println("Added room was not found.");
+            }
+            System.out.println();
+
+            // Test filterByBuilding(Building building)
+            System.out.println("Testing filterByBuilding(Building.Smiley):");
+
+            List<Room> smileyRooms = rooms.filterByBuilding(Building.Smiley);
+
+            System.out.println("Number of Smiley rooms: " + smileyRooms.size());
+
+            if (!smileyRooms.isEmpty()) {
+                System.out.println("Example Smiley room: " + smileyRooms.get(0));
+            }
+            System.out.println();
+
+            // Test filterByOccupancy(int occupancy)
+            System.out.println("Testing filterByOccupancy(1):");
+
             List<Room> singles = rooms.filterByOccupancy(1);
-            System.out.println("Single rooms: " + singles.size());
+
+            System.out.println("Number of single rooms: " + singles.size());
+
+            if (!singles.isEmpty()) {
+                System.out.println("Example single room: " + singles.get(0));
+            }
+            System.out.println();
+
+            // Test filterByAC(boolean hasAC)
+            System.out.println("Testing filterByAC(true):");
 
             List<Room> acRooms = rooms.filterByAC(true);
-            System.out.println("Rooms with AC: " + acRooms.size());
+
+            System.out.println("Number of rooms with AC: " + acRooms.size());
+
+            if (!acRooms.isEmpty()) {
+                System.out.println("Example AC room: " + acRooms.get(0));
+            }
+            System.out.println();
+
+            // Test filterBySquareFootage(int min, int max)
+            System.out.println("Testing filterBySquareFootage(100, 200):");
+
+            List<Room> mediumRooms = rooms.filterBySquareFootage(100, 200);
+
+            System.out.println("Number of rooms between 100 and 200 sqft: " + mediumRooms.size());
+
+            if (!mediumRooms.isEmpty()) {
+                System.out.println("Example room between 100 and 200 sqft: " + mediumRooms.get(0));
+            }
+            System.out.println();
+
+            // Test filter(Building building, Integer occupancy, Boolean hasAC, Integer minSize, Integer maxSize)
+            System.out.println("Testing combined filter:");
+
+            List<Room> filteredRooms = rooms.filter(
+                    Building.Smiley,
+                    1,
+                    false,
+                    100,
+                    200
+            );
+
+            System.out.println("Number of Smiley single rooms without AC between 100 and 200 sqft: " + filteredRooms.size());
+
+            if (!filteredRooms.isEmpty()) {
+                System.out.println("Example combined-filter result: " + filteredRooms.get(0));
+            }
+            System.out.println();
+
+            // Test get() on a room that should not exist.
+            System.out.println("Testing get() with invalid room name:");
+
+            Room missingRoom = rooms.get("Fake Dorm - 000");
+
+            if (missingRoom == null) {
+                System.out.println("Correctly returned null for a room that does not exist.");
+            } else {
+                System.out.println("Unexpectedly found room: " + missingRoom);
+            }
+
+            System.out.println();
+            System.out.println("All Rooms tests completed.");
 
         } catch (IOException e) {
+
+            System.out.println("Could not load room data.");
             e.printStackTrace();
         }
     }

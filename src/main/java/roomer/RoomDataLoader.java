@@ -207,9 +207,16 @@ public class RoomDataLoader {
 
         try {
 
+            // Test load(String filePath)
+            System.out.println("Testing load(String filePath):");
+
             Rooms rooms = load("master.csv");
 
             System.out.println("Loaded " + rooms.size() + " rooms.");
+            System.out.println();
+
+            // Test that loaded rooms can be accessed
+            System.out.println("Testing loaded Rooms object:");
 
             int count = 0;
 
@@ -219,13 +226,100 @@ public class RoomDataLoader {
 
                 count++;
 
-                if (count == 20) {
+                if (count == 5) {
                     break;
                 }
             }
 
+            System.out.println();
+
+            // Test splitCSVLine(String line)
+            System.out.println("Testing splitCSVLine(String line):");
+
+            String testCSVLine = "137,\"Dialynas - DLNS 100 - 101\",unused,unused,4/11/2023 20:15,unused,unused,4/9/2024 18:42,unused,unused,4/8/2025 17:27,1,TRUE";
+
+            String[] parts = splitCSVLine(testCSVLine);
+
+            System.out.println("Number of columns found: " + parts.length);
+            System.out.println("Column 0, square footage: " + parts[SQFT_COL]);
+            System.out.println("Column 1, raw room name: " + parts[RAW_NAME_COL]);
+            System.out.println("Column 4, 2023 time: " + parts[TIME_2023_COL]);
+            System.out.println("Column 12, AC status: " + parts[AC_COL]);
+            System.out.println();
+
+            // Test getString(String value)
+            System.out.println("Testing getString(String value):");
+
+            String quotedString = "\"Dialynas - DLNS 100 - 101\"";
+            String cleanedString = getString(quotedString);
+
+            System.out.println("Original string: " + quotedString);
+            System.out.println("Cleaned string: " + cleanedString);
+            System.out.println();
+
+            // Test getInt(String value)
+            System.out.println("Testing getInt(String value):");
+
+            int sqft = getInt("137 sqft");
+            int blankInt = getInt("");
+
+            System.out.println("getInt(\"137 sqft\") returned: " + sqft);
+            System.out.println("getInt(\"\") returned: " + blankInt);
+            System.out.println();
+
+            // Test getBoolean(String value)
+            System.out.println("Testing getBoolean(String value):");
+
+            boolean trueValue = getBoolean("TRUE");
+            boolean falseValue = getBoolean("FALSE");
+            boolean blankBoolean = getBoolean("");
+
+            System.out.println("getBoolean(\"TRUE\") returned: " + trueValue);
+            System.out.println("getBoolean(\"FALSE\") returned: " + falseValue);
+            System.out.println("getBoolean(\"\") returned: " + blankBoolean);
+            System.out.println();
+
+            // Test getDateTime(String value)
+            System.out.println("Testing getDateTime(String value):");
+
+            LocalDateTime validDateTime = getDateTime("4/13/2023 18:54");
+            LocalDateTime noSelectionTime = getDateTime("No Selection Time Issued");
+            LocalDateTime blankDateTime = getDateTime("");
+
+            System.out.println("getDateTime(\"4/13/2023 18:54\") returned: " + validDateTime);
+            System.out.println("getDateTime(\"No Selection Time Issued\") returned: " + noSelectionTime);
+            System.out.println("getDateTime(\"\") returned: " + blankDateTime);
+            System.out.println();
+
+            // Test creating a Room from parsed values
+            System.out.println("Testing parsed values by creating one Room:");
+
+            int parsedSqft = getInt(parts[SQFT_COL]);
+            String parsedRawName = getString(parts[RAW_NAME_COL]);
+            LocalDateTime parsedTime2023 = getDateTime(parts[TIME_2023_COL]);
+            LocalDateTime parsedTime2024 = getDateTime(parts[TIME_2024_COL]);
+            LocalDateTime parsedTime2025 = getDateTime(parts[TIME_2025_COL]);
+            int parsedOccupancy = getInt(parts[OCCUPANCY_COL]);
+            boolean parsedAC = getBoolean(parts[AC_COL]);
+
+            Room testRoom = new Room(
+                    parsedRawName,
+                    parsedSqft,
+                    parsedTime2023,
+                    parsedTime2024,
+                    parsedTime2025,
+                    parsedOccupancy,
+                    parsedAC
+            );
+
+            System.out.println("Created test room: " + testRoom);
+            System.out.println(testRoom.completeDrawHistory());
+
+            System.out.println("All RoomDataLoader tests completed.");
+
         } catch (IOException e) {
 
+            System.out.println("Could not load room data.");
             e.printStackTrace();
         }
     }

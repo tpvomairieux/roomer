@@ -282,23 +282,39 @@
     }
 
     async function searchRoom() {
-        // Normalize "Walker-719" → "Walker - 719" to match stored keys
         let name = document.getElementById('search-input').value.trim();
+        // Normalize shorthand like "Walker-719" → "Walker - 719"
         if (!name.includes(' - ') && name.includes('-')) {
             const parts = name.split('-');
             name = parts[0].trim() + ' - ' + parts.slice(1).join('-').trim();
         }
         const div   = document.getElementById('search-result');
         const rooms = await ensureRooms();
-        const r     = rooms.find(room => room.roomName.toLowerCase() === name.toLowerCase());
-        if (r) {
+        const query   = name.toLowerCase();
+        const matches = rooms.filter(room => room.roomName.toLowerCase().includes(query));
+
+        if (matches.length === 0) {
+            div.innerHTML = '<span class="error">Room not found.</span>';
+        } else if (matches.length === 1) {
+            const r = matches[0];
             div.innerHTML = `<strong>${r.roomName}</strong><br>
                 Building: ${r.building} &nbsp;|&nbsp;
                 Occupancy: ${r.occupancy} &nbsp;|&nbsp;
                 ${r.sqft} sq ft &nbsp;|&nbsp;
                 AC: ${r.hasAC ? 'Yes' : 'No'}`;
         } else {
-            div.innerHTML = '<span class="error">Room not found.</span>';
+            let html = `<table><thead><tr><th>Room</th><th>Building</th><th>Occupancy</th><th>Sq Ft</th><th>AC</th></tr></thead><tbody>`;
+            matches.forEach(r => {
+                html += `<tr>
+                    <td>${r.roomName}</td>
+                    <td>${r.building}</td>
+                    <td>${r.occupancy}</td>
+                    <td>${r.sqft} sq ft</td>
+                    <td><span class="${r.hasAC ? 'badge-yes' : 'badge-no'}">${r.hasAC ? 'Yes' : 'No'}</span></td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            div.innerHTML = html;
         }
     }
 

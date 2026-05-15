@@ -82,15 +82,19 @@ public class ListingTreeInterface {
         double binPrice;
 
         while (true) { // Checks if user is in system and therefore eligible to make a listing
-            System.out.print("Enter your email: ");
+            System.out.println("Enter your Pomona email: ");
             String email = scanner.nextLine();
 
-            user = users.get(email);
-
-            if (user == null) {
-                System.out.println("User not found.");
+            if (email.endsWith("@mymail.pomona.edu") || email.endsWith("@pomona.edu")) {
+                user = users.get(email);
+                if (user == null) {
+                    System.out.println("Warning: User not found.");
+                    return;
+                } else {
+                    break;
+                }
             } else {
-                break;
+                System.out.println("Warning: not a valid Pomona email.");
             }
         }
 
@@ -141,6 +145,47 @@ public class ListingTreeInterface {
         System.out.println("New listing posted");
     }
 
+    private static void removeSlot(Scanner scanner, Users users, ListingTree tree) {
+        User user = new User();
+        while (true) { // Checks if user is in system and therefore eligible to make a listing
+            System.out.println("Enter your Pomona email: ");
+            String email = scanner.nextLine();
+
+            if (email.endsWith("@mymail.pomona.edu") || email.endsWith("@pomona.edu")) {
+                user = users.get(email);
+                if (user == null) {
+                    System.out.println("Warning: User not found.");
+                    return;
+                } else {
+                    break;
+                }
+            } else {
+                System.out.println("Warning: not a valid Pomona email.");
+            }
+        }
+
+        while (true) { // Checks if user wants to remove listing
+            System.out.println("Would you like to remove your time?");
+            System.out.println("1. Confirm");
+            System.out.println("2. Cancel");
+
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    tree.remove(user.getEmail());
+                    return;
+
+                case "2":
+                    System.out.println("Cancelling removal.");
+                    return;
+
+                default:
+                    System.out.println("Invalid selection. Please try again!");
+            }
+        }
+    }
+
     // private static void removeSlot() for later
 
     // This method serves as the frontend for getting the listings
@@ -154,7 +199,7 @@ public class ListingTreeInterface {
         }
     }
 
-    private static void purchaseListing(Scanner scanner, Users users, ListingTree tree) { // Ability to cancel?
+    private static void purchaseListing(Scanner scanner, Users users, ListingTree tree) {
         User buyer = new User();
         User seller = new User();
         Listing sellerListing;
